@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 02-11-2025 a las 04:20:33
+-- Tiempo de generación: 07-11-2025 a las 20:53:46
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -28,8 +28,8 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `roles` (
-  `rol_id` int(11) NOT NULL,
-  `nombre_rol` varchar(50) NOT NULL
+  `idRol` int(11) NOT NULL COMMENT 'Identificador numérico único para el rol.',
+  `nombre_rol` varchar(50) NOT NULL COMMENT 'Nombre descriptivo del rol.'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -39,18 +39,18 @@ CREATE TABLE `roles` (
 --
 
 CREATE TABLE `trabajos` (
-  `trabajo_id` int(11) NOT NULL,
-  `cliente_id` int(11) NOT NULL,
-  `ruta_archivo` varchar(255) NOT NULL,
-  `nombre_archivo_original` varchar(255) NOT NULL,
-  `num_copias` int(11) NOT NULL CHECK (`num_copias` > 0 and `num_copias` < 100),
-  `calidad` enum('blanco_y_negro','color') NOT NULL,
-  `faz` enum('simple','doble') NOT NULL,
-  `estado` enum('pendiente','terminado','retirado') NOT NULL DEFAULT 'pendiente',
-  `fecha_solicitud` timestamp NOT NULL DEFAULT current_timestamp(),
-  `fecha_retiro_solicitada` datetime NOT NULL,
-  `fecha_impresion` datetime DEFAULT NULL,
-  `fecha_entrega` datetime DEFAULT NULL
+  `idTrabajo` int(11) NOT NULL COMMENT 'Identificador para el trabajo/pedido.',
+  `idCliente` int(11) NOT NULL COMMENT 'Clave foránea que indica el usuario solicitó el trabajo.',
+  `ruta_archivo` varchar(255) NOT NULL COMMENT 'Ubicación del directorio donde se guarda el archivo a imprimir.',
+  `nombre_archivo_original` varchar(255) NOT NULL COMMENT '	Nombre original del archivo que subió el cliente.',
+  `num_copias` int(11) NOT NULL COMMENT 'Cantidad de copias que se van a imprimir.',
+  `calidad` enum('blanco_y_negro','color') NOT NULL COMMENT 'Calidad de la impresión. Valores: ''blanco_y_negro'', ''color''.',
+  `faz` enum('simple','doble') NOT NULL COMMENT '	Tipo de faz de la impresión. Valores: ''simple'', ''doble''.',
+  `estado` enum('pendiente','terminado','retirado') NOT NULL DEFAULT 'pendiente' COMMENT 'Estado en el que se encuentra el trabajo dentro del proceso de impresión.',
+  `fecha_solicitud` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Fecha/hora de creación del pedido.',
+  `fecha_retiro_solicitada` datetime NOT NULL COMMENT '	Fecha en la que el usuario pidió que quede preparado el trabajo para ir a retirarlo.',
+  `fecha_impresion` datetime DEFAULT NULL COMMENT 'Fecha/hora en que el admin marca el trabajo como ''terminado''.',
+  `fecha_entrega` datetime DEFAULT NULL COMMENT 'Fecha/hora en que el admin marca el trabajo como ''terminado''.'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -60,13 +60,13 @@ CREATE TABLE `trabajos` (
 --
 
 CREATE TABLE `usuarios` (
-  `usuario_id` int(11) NOT NULL,
-  `rol_id` int(11) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `nombre_completo` varchar(100) DEFAULT NULL,
-  `esta_activo` tinyint(1) NOT NULL DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+  `idUsuario` int(11) NOT NULL COMMENT 'Identificador para cada cuenta de usuario.',
+  `idRol` int(11) NOT NULL COMMENT '	Clave foránea que vincula al usuario con su rol.',
+  `email` varchar(255) NOT NULL COMMENT 'Correo electrónico del usuario, usado para el login.',
+  `password` varchar(255) NOT NULL COMMENT '	Contraseña del usuario usada para iniciar sesión',
+  `nombre_completo` varchar(100) DEFAULT NULL COMMENT '	Nombre(s) y apellido(s) del usuario.',
+  `esta_activo` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Controla si la cuenta puede iniciar sesión (1 = sí, 0 = no).',
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '	Fecha/hora de creación del usuario.'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -77,23 +77,23 @@ CREATE TABLE `usuarios` (
 -- Indices de la tabla `roles`
 --
 ALTER TABLE `roles`
-  ADD PRIMARY KEY (`rol_id`),
+  ADD PRIMARY KEY (`idRol`),
   ADD UNIQUE KEY `nombre_rol` (`nombre_rol`);
 
 --
 -- Indices de la tabla `trabajos`
 --
 ALTER TABLE `trabajos`
-  ADD PRIMARY KEY (`trabajo_id`),
-  ADD KEY `cliente_id` (`cliente_id`);
+  ADD PRIMARY KEY (`idTrabajo`),
+  ADD KEY `cliente_id` (`idCliente`);
 
 --
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`usuario_id`),
+  ADD PRIMARY KEY (`idUsuario`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `rol_id` (`rol_id`);
+  ADD KEY `rol_id` (`idRol`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -103,19 +103,19 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `rol_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idRol` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador numérico único para el rol.';
 
 --
 -- AUTO_INCREMENT de la tabla `trabajos`
 --
 ALTER TABLE `trabajos`
-  MODIFY `trabajo_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idTrabajo` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador para el trabajo/pedido.';
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `usuario_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idUsuario` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador para cada cuenta de usuario.';
 
 --
 -- Restricciones para tablas volcadas
@@ -125,13 +125,13 @@ ALTER TABLE `usuarios`
 -- Filtros para la tabla `trabajos`
 --
 ALTER TABLE `trabajos`
-  ADD CONSTRAINT `trabajos_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `usuarios` (`usuario_id`);
+  ADD CONSTRAINT `trabajos_ibfk_1` FOREIGN KEY (`idCliente`) REFERENCES `usuarios` (`idUsuario`);
 
 --
 -- Filtros para la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`rol_id`);
+  ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`idRol`) REFERENCES `roles` (`idRol`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
