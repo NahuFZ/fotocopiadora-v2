@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 07-11-2025 a las 20:53:46
+-- Tiempo de generación: 08-11-2025 a las 22:13:37
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -46,12 +46,12 @@ CREATE TABLE `trabajos` (
   `num_copias` int(11) NOT NULL COMMENT 'Cantidad de copias que se van a imprimir.',
   `calidad` enum('blanco_y_negro','color') NOT NULL COMMENT 'Calidad de la impresión. Valores: ''blanco_y_negro'', ''color''.',
   `faz` enum('simple','doble') NOT NULL COMMENT '	Tipo de faz de la impresión. Valores: ''simple'', ''doble''.',
-  `estado` enum('pendiente','terminado','retirado') NOT NULL DEFAULT 'pendiente' COMMENT 'Estado en el que se encuentra el trabajo dentro del proceso de impresión.',
+  `estado` enum('pendiente','terminado','retirado') NOT NULL DEFAULT 'pendiente' COMMENT 'Estado en el que se encuentra el trabajo dentro del proceso de impresión.  Valores: ''pendiente'', ''terminado'', ''retirado''.',
   `fecha_solicitud` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Fecha/hora de creación del pedido.',
   `fecha_retiro_solicitada` datetime NOT NULL COMMENT '	Fecha en la que el usuario pidió que quede preparado el trabajo para ir a retirarlo.',
   `fecha_impresion` datetime DEFAULT NULL COMMENT 'Fecha/hora en que el admin marca el trabajo como ''terminado''.',
-  `fecha_entrega` datetime DEFAULT NULL COMMENT 'Fecha/hora en que el admin marca el trabajo como ''terminado''.'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `fecha_entrega` datetime DEFAULT NULL COMMENT 'Fecha/hora en que el admin marca el trabajo como ''retirado''.'
+) ;
 
 -- --------------------------------------------------------
 
@@ -63,7 +63,7 @@ CREATE TABLE `usuarios` (
   `idUsuario` int(11) NOT NULL COMMENT 'Identificador para cada cuenta de usuario.',
   `idRol` int(11) NOT NULL COMMENT '	Clave foránea que vincula al usuario con su rol.',
   `email` varchar(255) NOT NULL COMMENT 'Correo electrónico del usuario, usado para el login.',
-  `password` varchar(255) NOT NULL COMMENT '	Contraseña del usuario usada para iniciar sesión',
+  `password_hash` varchar(255) NOT NULL COMMENT 'Contraseña cifrada del usuario usada para iniciar sesión.',
   `nombre_completo` varchar(100) DEFAULT NULL COMMENT '	Nombre(s) y apellido(s) del usuario.',
   `esta_activo` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Controla si la cuenta puede iniciar sesión (1 = sí, 0 = no).',
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '	Fecha/hora de creación del usuario.'
