@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-11-2025 a las 22:13:37
+-- Tiempo de generación: 09-11-2025 a las 01:40:10
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -63,7 +63,7 @@ CREATE TABLE `usuarios` (
   `idUsuario` int(11) NOT NULL COMMENT 'Identificador para cada cuenta de usuario.',
   `idRol` int(11) NOT NULL COMMENT '	Clave foránea que vincula al usuario con su rol.',
   `email` varchar(255) NOT NULL COMMENT 'Correo electrónico del usuario, usado para el login.',
-  `password_hash` varchar(255) NOT NULL COMMENT 'Contraseña cifrada del usuario usada para iniciar sesión.',
+  `password` varchar(255) NOT NULL COMMENT 'Contraseña del usuario usada para iniciar sesión.',
   `nombre_completo` varchar(100) DEFAULT NULL COMMENT '	Nombre(s) y apellido(s) del usuario.',
   `esta_activo` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Controla si la cuenta puede iniciar sesión (1 = sí, 0 = no).',
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '	Fecha/hora de creación del usuario.'
