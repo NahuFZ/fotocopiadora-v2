@@ -25,7 +25,7 @@ public class LoginServlet extends HttpServlet {
      
 	// --- Configuración de la Base de Datos ---
     // ¡¡ CAMBIA ESTO !! Pon tu usuario y contraseña de MySQL.
-    private String jdbcURL = "jdbc:mysql://localhost:3306/fotocopiadora";
+    private String jdbcURL = "jdbc:mysql://localhost:3306/fotocopiadora?ServerTimezone=UTC";
     private String jdbcUsername = "root";
     private String jdbcPassword = ""; // Escribe tu contraseña aquí si tienes una
     
@@ -55,31 +55,41 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         // Variables de JDBC
+        // conn realiza la conexión con la DB.
         Connection conn = null;
+        // ps realiza la consulta para recuperar los datos.
         PreparedStatement ps = null;
+        // rs recibe el resultado de la consulta.
         ResultSet rs = null;
 
         try {
-            // 2. Conectar a la base de datos
+            // 2. Conectar a la base de datos. Primero cargamos en memoria el archivo .jar
             Class.forName("com.mysql.cj.jdbc.Driver");
+            // Establecemos la conexipon con la base de datos.
             conn = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
 
             // 3. Preparar la consulta SQL
             // Es una buena práctica traer el rol del usuario en la misma consulta
             // Usamos un JOIN con la tabla 'roles'.
             // Usamos los nombres de columnas de tu SQL: idRol, idUsuario, etc.
+            // En lugar de "pegar" el email del usuario en el string de SQL 
+            // (lo cual es vulnerable a Inyección SQL), creamos una "plantilla" con un ?.
             String sql = "SELECT u.idUsuario, u.password, u.nombre_completo, u.esta_activo, r.nombre_rol " +
                          "FROM usuarios u " +
                          "INNER JOIN roles r ON u.idRol = r.idRol " +
                          "WHERE u.email = ?";
             
             ps = conn.prepareStatement(sql);
+            // Esta linea le dice a la base de datos: "Toma el texto de la variable email y colócalo de forma segura en el primer ?". 
+            // La base de datos se encarga de "limpiar" el texto para que no sea malicioso.
             ps.setString(1, email);
 
             // 4. Ejecutar la consulta
             rs = ps.executeQuery();
 
             // 5. Procesar el resultado
+            // rs es un puntero que empieza antes de la primera fila de resultados
+            // Si encontro el usuario, devuelve true. Si no lo encontró, devuelve false.
             if (rs.next()) {
                 // --- Usuario ENCONTRADO ---
                 
@@ -128,7 +138,7 @@ public class LoginServlet extends HttpServlet {
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace(); // Muestra el error en la consola de Tomcat
-            enviarError(request, response, "Error interno: No se encontró el driver de la base deatos.");
+            enviarError(request, response, "Error interno: No se encontró el driver de la base de datos.");
         } catch (SQLException e) {
             e.printStackTrace(); // Muestra el error en la consola de Tomcat
             enviarError(request, response, "Error interno: Problema al conectar con la base de datos.");
