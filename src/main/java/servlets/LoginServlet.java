@@ -65,7 +65,7 @@ public class LoginServlet extends HttpServlet {
         try {
             // 2. Conectar a la base de datos. Primero cargamos en memoria el archivo .jar
             Class.forName("com.mysql.cj.jdbc.Driver");
-            // Establecemos la conexipon con la base de datos.
+            // Establecemos la conexion con la base de datos.
             conn = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
 
             // 3. Preparar la consulta SQL
@@ -123,17 +123,17 @@ public class LoginServlet extends HttpServlet {
                         
                     } else {
                         // Error: Cuenta inactiva
-                        enviarError(request, response, "Su cuenta está desactivada. Contactese al administrador.");
+                        enviarError(request, response, "Su cuenta está desactivada. Para volverla a activar, contactese con el administrador.");
                     }
                     
                 } else {
                     // Error: Contraseña incorrecta
-                    enviarError(request, response, "Email o contraseña incorrectos.");
+                    enviarError(request, response, "Contraseña incorrecta.");
                 }
                 
             } else {
                 // Error: Usuario no encontrado
-                enviarError(request, response, "Email o contraseña incorrectos.");
+                enviarError(request, response, "El email no se encuentra registrado.");
             }
 
         } catch (ClassNotFoundException e) {

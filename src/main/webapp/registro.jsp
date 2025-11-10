@@ -1,10 +1,5 @@
-<%-- 
-  Importamos la JSTL (Java Standard Tag Library)
-  para poder usar <c:if> y <c:forEach> para mostrar los errores.
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
---%>
-
+<%@ page import="java.util.List" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -18,28 +13,38 @@
 
     <h1>Registro de Nueva Cuenta de Cliente</h1>
 
-    <%-- 
-      Esta sección es para mostrar la lista de errores.
+     <%-- 
+      Bloque de Scriptlet para mostrar la lista de errores.
       Si el RegistroServlet encuentra un problema (ej. email duplicado),
       recargará esta página y enviará un atributo "listaErrores".
-    
-    <c:if test="${not empty listaErrores}">
-        <div style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 15px;">
-            <strong>Error al registrar:</strong>
-            <ul>
-                Iteramos sobre cada error en la lista y lo mostramos
-                <c:forEach var="error" items="${listaErrores}">
-                    <li><c:out value="${error}" /></li>
-                </c:forEach>
-            </ul>
-        </div>
-    </c:if>
-	--%>
-	
-    <%-- 
-      Este formulario enviará los datos al "RegistroServlet"
-      usando el método POST.
     --%>
+    <%
+        Object erroresObj = request.getAttribute("listaErrores");
+        
+        // Comprobamos si el atributo existe Y si es una Lista
+        if (erroresObj != null && erroresObj instanceof List) {
+            
+            // Hacemos el "casting" (conversión) del objeto a una Lista de Strings
+            List<String> listaErrores = (List<String>) erroresObj;
+            
+            if (!listaErrores.isEmpty()) {
+                // Si la lista no está vacía, empezamos a imprimir el HTML
+    %>
+                <div style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 15px;">
+                    <strong>Error al registrar:</strong>
+                    <ul>
+    <%
+                        // Iteramos sobre la lista e imprimimos cada error
+                        for (String error : listaErrores) {
+                            out.print("<li>" + error + "</li>");
+                        }
+    %>
+                    </ul>
+                </div>
+    <%
+            } // Fin del if (!listaErrores.isEmpty())
+        } // Fin del if (erroresObj != null)
+    %>
     <form action="RegistroServlet" method="POST">
         
         <div>

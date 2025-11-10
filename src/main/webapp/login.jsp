@@ -23,32 +23,27 @@
     <h2>Iniciar Sesión</h2>
 
     <%-- 
-      Esta sección es para mostrar mensajes de error.
-      Si el LoginServlet falla, redirigirá de nuevo a esta página
-      estableciendo un atributo "error".
-    
-    <c:if test="${not empty error}">
+      Bloque de Scriptlet para manejar TODOS los mensajes.
+      Tanto los errores (enviados como Atributo)
+      como los éxitos (enviados como Parámetro).
+    --%>
+    <%
+        // 1. Revisar si hay un mensaje de ERROR (del LoginServlet)
+        Object errorObj = request.getAttribute("error");
+        if (errorObj != null) {
+            String errorMsg = errorObj.toString();
+            // Imprimimos el HTML del error
+            out.print("<p style='color: red; font-weight: bold;'>" + errorMsg + "</p>");
+        }
         
-          Aunque dijimos "sin CSS", un simple color rojo para un error
-          es una excepción de usabilidad fundamental.
-          Si el profesor es estricto, puedes quitar el 'style'.
-       
-        <p style="color: red; font-weight: bold;">
-            <c:out value="${error}" />
-        </p>
-    </c:if>
-
-    
-      Esta sección es para un mensaje de éxito, por ejemplo,
-      cuando un usuario se registra y es redirigido aquí.
-    
-    <c:if test="${not empty exito}">
-        <p style="color: green; font-weight: bold;">
-            <c:out value="${exito}" />
-        </p>
-    </c:if>
-	--%>
-
+        // 2. Revisar si hay un mensaje de ÉXITO (del RegistroServlet)
+        // (El servlet redirige a "login.jsp?registro=exitoso")
+        String registroParam = request.getParameter("registro");
+        if (registroParam != null && registroParam.equals("exitoso")) {
+            // Imprimimos el HTML de éxito
+            out.print("<p style='color: green; font-weight: bold;'>¡Cuenta creada exitosamente!.</p>");
+        }
+    %>
     <%-- 
       Este es el formulario de login.
       - 'action="LoginServlet"' define el Servlet que procesará los datos.
