@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import clases.Usuario;
-import dao.AuthException;
+import exceptions.AuthException;
 import dao.UsuarioDAO;
 
 import java.io.IOException;

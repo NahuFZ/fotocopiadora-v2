@@ -11,6 +11,7 @@ import java.sql.SQLException;
 
 // Imports de clases de nuestro proyecto
 import db.DBConnection;
+import exceptions.AuthException;
 import clases.Usuario;
 
 /**
