@@ -47,7 +47,7 @@
     <h1>Panel de Administrador</h1>
     
     <%-- Saludamos al admin por su nombre --%>
-    <h3>Bienvenido, <%= nombreAdmin != null ? nombreAdmin : "Administrador" %></h3>
+    <h3>Bienvenido, <%= nombreAdmin %></h3>
     
     <p>Seleccione una tarea para continuar:</p>
     

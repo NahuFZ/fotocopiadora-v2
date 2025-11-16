@@ -6,35 +6,31 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-//Imports de JDBC
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 //Imports de Utilidades
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+//Imports de nuestra arquitectura DAO
+import dao.UsuarioDAO;
+
 /**
  * Servlet que maneja el proceso de registro de un nuevo cliente.
- * Recibe los datos del formulario de registro.jsp.
+ * Utiliza UsuarioDAO para interactuar con la BBDD.
  */
 @WebServlet(description = "Servlet para registrar a un nuevo usuario", urlPatterns = {"/RegistroServlet"})
 public class RegistroServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
-	// --- Configuración de la Base de Datos ---
-    // ¡¡ CAMBIA ESTO !! Pon tu usuario y contraseña de MySQL.
-    private String jdbcURL = "jdbc:mysql://localhost:3306/fotocopiadora?ServerTimezone=UTC";
-    private String jdbcUsername = "root";
-    private String jdbcPassword = ""; // Escribe tu contraseña aquí si tienes una
+	// Creamos una instancia del DAO.
+    // En aplicaciones más avanzadas, esto se "inyectaría".
+    // Para este proyecto, instanciarlo aquí está perfecto.
+    private UsuarioDAO usuarioDAO;
 
     public RegistroServlet() {
         super();
-        // TODO Auto-generated constructor stub
+        // Inicializamos el DAO en el constructor del servlet
+        this.usuarioDAO = new UsuarioDAO();
     }
 
     @Override
@@ -90,84 +86,36 @@ public class RegistroServlet extends HttpServlet {
             return; // Detenemos la ejecución
         }
         
-        // 4. Si las validaciones básicas pasaron, conectamos a la BBDD
-        Connection conn = null;
-        PreparedStatement psCheck = null; // Para chequear el email
-        PreparedStatement psInsert = null; // Para insertar el usuario
-        ResultSet rs = null;
-
+        // 4. Si las validaciones básicas pasaron, usamos el DAO
+        
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            conn = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
-
-            // 5. Validación de BBDD: Verificar si el email ya existe
-            String sqlCheck = "SELECT idUsuario FROM usuarios WHERE email = ?";
-            psCheck = conn.prepareStatement(sqlCheck);
-            psCheck.setString(1, email);
-            rs = psCheck.executeQuery();
-
-            if (rs.next()) {
-                // --- El email YA EXISTE ---
-                errores.add("El email ingresado ya está registrado.");
+            // Validación 5: Email ya existe (Lógica de BBDD)
+            // Llamamos al método del DAO
+            if (usuarioDAO.emailExiste(email)) {
+                errores.add("El email ingresado ya se encuentra registrado.");
                 enviarErrores(request, response, errores);
-            } else {
-                // --- El email es NUEVO, podemos registrar ---
-                
-                // 6. Preparar el INSERT
-                // Usamos los nombres de columnas de tu SQL: idRol, password
-                String sqlInsert = "INSERT INTO usuarios (idRol, email, password, nombre_completo, esta_activo, fecha_registro) " +
-                                 "VALUES (?, ?, ?, ?, ?, NOW())";
-                
-                psInsert = conn.prepareStatement(sqlInsert);
-                
-                // NOTA: Asumimos que el idRol de "cliente" es 1.
-                // Esto debería estar en los datos iniciales (seeds) de tu BBDD.
-                psInsert.setInt(1, 1); 
-                psInsert.setString(2, email);
-                
-                // ¡¡ REQUISITO !! Guardando contraseña en TEXTO PLANO
-                psInsert.setString(3, pass1); 
-                
-                psInsert.setString(4, nombreCompleto);
-                psInsert.setBoolean(5, true); // La cuenta se crea activa por defecto
-
-                // 7. Ejecutar el INSERT
-                // Nos devuelve el número de filas insertadas (1).
-                int filasInsertadas = psInsert.executeUpdate();
-
-                // Se realiza en caso que el INSERT falle.
-                if (filasInsertadas > 0) {
-                    // ¡Registro exitoso!
-                    // Redirigimos al login con un mensaje de éxito.
-                    response.sendRedirect("login.jsp?registro=exitoso");
-                } else {
-                    errores.add("Ocurrió un error inesperado al crear la cuenta.");
-                    enviarErrores(request, response, errores);
-                }
+                return;
             }
+            
+            // 5. Crear el usuario (Lógica de BBDD)
+            // Llamamos al método del DAO
+            boolean registroExitoso = usuarioDAO.crearCliente(nombreCompleto, email, pass1);
 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace(); 
-            errores.add("Error interno: No se encontró el driver de la base deatos.");
+            if (registroExitoso) {
+                // ¡Registro exitoso!
+                // Redirigimos al login con un mensaje de éxito.
+                response.sendRedirect("login.jsp?registro=exitoso");
+            } else {
+                // Error raro (el DAO devolvió false)
+                errores.add("Ocurrió un error inesperado al crear la cuenta.");
+                enviarErrores(request, response, errores);
+            }
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            // Captura de cualquier otro error (ej. BBDD caída, Driver no encontrado)
+            e.printStackTrace(); // Imprime el error en la consola de Tomcat
+            errores.add("Error de conexión con la base de datos. Intente más tarde.");
             enviarErrores(request, response, errores);
-        } catch (SQLException e) {
-            e.printStackTrace(); 
-            errores.add("Error interno: Problema al conectar con la base de datos.");
-            enviarErrores(request, response, errores);
-        } finally {
-            // 8. Cerrar todas las conexiones de JDBC
-            try {
-                if (rs != null) rs.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-            try {
-                if (psCheck != null) psCheck.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-             try {
-                if (psInsert != null) psInsert.close();
-            } catch (SQLException e) { e.printStackTrace(); }
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 
@@ -180,9 +128,11 @@ public class RegistroServlet extends HttpServlet {
         // Guardamos la lista de errores para que registro.jsp la muestre
         request.setAttribute("listaErrores", errores);
         
-        // Reenviamos la petición (forward). 
-        // Esto mantiene los datos que el usuario ya había escrito (en 'request.getParameter')
-        // para que el JSP pueda auto-rellenarlos.
+        // También reenviamos los datos que el usuario ya había escrito
+        request.setAttribute("nombreAnterior", request.getParameter("nombre_completo"));
+        request.setAttribute("emailAnterior", request.getParameter("email"));
+
+        // Reenviamos al usuario DE VUELTA al formulario de registro
         request.getRequestDispatcher("registro.jsp").forward(request, response);
     }
     
