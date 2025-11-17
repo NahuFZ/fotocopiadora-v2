@@ -2,7 +2,10 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import db.DBConnection;
 import clases.Trabajo;
@@ -60,8 +63,135 @@ public class TrabajoDAO {
         return filasInsertadas > 0;
     }
     
+    /**
+     * Obtiene todos los trabajos de un cliente específico, con filtros y orden.
+     *
+     * @param idCliente El ID del cliente del cual se busca el historial.
+     * @param filtroEstado El estado por el cual filtrar (ej. "pendiente") o "" para todos.
+     * @param orden La columna y dirección por la cual ordenar (ej. "fecha_sol_desc").
+     * @return Una lista de objetos Trabajo.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    public List<Trabajo> getTrabajosPorCliente(int idCliente, String filtroEstado, String orden) 
+            throws SQLException, ClassNotFoundException {
+        
+        List<Trabajo> listaTrabajos = new ArrayList<>();
+        
+        // --- 1. Construcción de la consulta SQL ---
+        // Base de la consulta. Usamos StringBuilder porque, a diferencia de String, este se puede modificar dinamicamente.
+        StringBuilder sql = new StringBuilder(
+            "SELECT * FROM trabajos WHERE idCliente = ? "
+        );
+
+        // Añadir filtro de estado (si existe)
+        if (filtroEstado != null && !filtroEstado.isEmpty() && !filtroEstado.equals("todos")) {
+            sql.append(" AND estado = ? ");
+        }
+
+        // Añadir ordenamiento (con validación para evitar SQL Injection)
+        // Por defecto, ordenamos por fecha de solicitud más nueva.
+        String orderBySql = " ORDER BY fecha_solicitud DESC";
+        switch (orden) {
+            case "fecha_sol_asc":
+                orderBySql = " ORDER BY fecha_solicitud ASC";
+                break;
+            case "fecha_retiro_desc":
+                orderBySql = " ORDER BY fecha_retiro_solicitada DESC";
+                break;
+            case "fecha_retiro_asc":
+                orderBySql = " ORDER BY fecha_retiro_solicitada ASC";
+                break;
+        }
+        sql.append(orderBySql);
+
+        // --- 2. Ejecución de la consulta ---
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql.toString());
+            
+            // Seteamos los parámetros dinámicos
+            int paramIndex = 1;
+            // La suma se realiza después de enviar el parámetro, por lo que envía 1 al método y luego incrementa la variable.
+            ps.setInt(paramIndex++, idCliente);
+            
+            if (filtroEstado != null && !filtroEstado.isEmpty() && !filtroEstado.equals("todos")) {
+                ps.setString(paramIndex++, filtroEstado);
+            }
+
+            // Ejecutamos
+            rs = ps.executeQuery();
+
+            // 3. Mapear Resultados a Objetos
+            while (rs.next()) {
+                Trabajo trabajo = new Trabajo();
+                trabajo.setIdTrabajo(rs.getInt("idTrabajo"));
+                trabajo.setIdCliente(rs.getInt("idCliente"));
+                trabajo.setRutaArchivo(rs.getString("ruta_archivo"));
+                trabajo.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
+                trabajo.setNumCopias(rs.getInt("num_copias"));
+                trabajo.setCalidad(rs.getString("calidad"));
+                trabajo.setFaz(rs.getString("faz"));
+                trabajo.setEstado(rs.getString("estado"));
+                trabajo.setFechaSolicitud(rs.getTimestamp("fecha_solicitud"));
+                trabajo.setFechaRetiroSolicitada(rs.getTimestamp("fecha_retiro_solicitada"));
+                trabajo.setFechaImpresion(rs.getTimestamp("fecha_impresion"));
+                trabajo.setFechaEntrega(rs.getTimestamp("fecha_entrega"));
+                
+                listaTrabajos.add(trabajo);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+
+        return listaTrabajos;
+    }
+    
+    /**
+     * Borra un trabajo específico.
+     * Solo permite borrar si el ID del cliente coincide Y el estado es "pendiente".
+     *
+     * @param idTrabajo El ID del trabajo a borrar.
+     * @param idCliente El ID del cliente (para seguridad).
+     * @return true si el borrado fue exitoso.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    public boolean borrarTrabajo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
+        
+        String sql = "DELETE FROM trabajos WHERE idTrabajo = ? AND idCliente = ? AND estado = 'pendiente'";
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        int filasAfectadas = 0;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            
+            ps.setInt(1, idTrabajo);
+            ps.setInt(2, idCliente); // Seguridad
+            
+            filasAfectadas = ps.executeUpdate();
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, null);
+        }
+
+        // Si filasAfectadas es > 0, significa que borró la fila.
+        return filasAfectadas > 0;
+    }
     // Aquí, en el futuro, irán otros métodos como:
-    // public List<Trabajo> getTrabajosPorCliente(int idCliente) { ... }
     // public List<Trabajo> getAllTrabajos() { ... }
     // public boolean cambiarEstado(int idTrabajo, String nuevoEstado) { ... }
 }
