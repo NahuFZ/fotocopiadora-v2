@@ -49,7 +49,6 @@
     
     <%-- Saludamos al cliente por su nombre --%>
     <h3>Bienvenido, <%= nombreCliente %></h3>
-    
     <p>¿Qué te gustaría hacer?</p>
     
     <hr>
@@ -68,7 +67,8 @@
         </form>
         
         <!-- Botón 2: Historial de Pedidos -->
-        <form action="historialPedidos.jsp" method="GET" style="display: inline-block;">
+        <!-- Apunta a HistorialServlet para que la tabla se muestra al apretar el botón -->
+        <form action="HistorialPedidosServlet" method="GET" style="display: inline-block;">
             <button type="submit">Ver Historial de Pedidos</button>
         </form>
         

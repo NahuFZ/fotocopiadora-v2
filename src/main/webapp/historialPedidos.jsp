@@ -25,7 +25,7 @@
     
     // --- Si llegamos aquí, es un cliente válido ---
     
-    // 3. Obtener la lista de trabajos (que el HistorialServlet nos envió)
+    // 3. Obtener la lista de trabajos (que el HistorialPedidosServlet nos envió)
     List<Trabajo> listaTrabajos = (List<Trabajo>) request.getAttribute("listaTrabajos");
     
     // 4. Obtener los filtros actuales (para que el <select> los recuerde)
@@ -61,10 +61,10 @@
     
     <%-- 
       BLOQUE DE FILTROS
-      Este formulario "recarga" la página (enviando a HistorialServlet GET)
+      Este formulario "recarga" la página (enviando a HistorialPedidosServlet GET)
       con los nuevos parámetros de filtro.
     --%>
-    <form action="HistorialServlet" method="GET">
+    <form action="HistorialPedidosServlet" method="GET">
         <label for="filtroEstado">Filtrar por estado:</label>
         <select id="filtroEstado" name="filtroEstado">
             <option value="todos" <%-- Se usa 'selected' para recordar el filtro --%>
@@ -155,8 +155,8 @@
                     <%
                         if ("pendiente".equals(trabajo.getEstado())) {
                     %>
-                    <%-- Este es un mini-formulario que envía por POST al HistorialServlet --%>
-                    <form action="HistorialServlet" method="POST" style="margin: 0;">
+                    <%-- Este es un mini-formulario que envía por POST al HistorialPedidosServlet --%>
+                    <form action="HistorialPedidosServlet" method="POST" style="margin: 0;">
                         <input type="hidden" name="action" value="borrar">
                         <input type="hidden" name="idTrabajo" value="<%= trabajo.getIdTrabajo() %>">
                         <button type="submit">Borrar</button>

@@ -164,6 +164,35 @@ public class TrabajoDAO {
      * @throws SQLException
      * @throws ClassNotFoundException
      */
+    public String getRutaArchivoParaBorrar(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
+        
+        String sql = "SELECT ruta_archivo FROM trabajos WHERE idTrabajo = ? AND idCliente = ? AND estado = 'pendiente'";
+        String rutaArchivo = null;
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, idTrabajo);
+            ps.setInt(2, idCliente);
+            rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                rutaArchivo = rs.getString("ruta_archivo");
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+        
+        return rutaArchivo;
+    }
+    
     public boolean borrarTrabajo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
         
         String sql = "DELETE FROM trabajos WHERE idTrabajo = ? AND idCliente = ? AND estado = 'pendiente'";

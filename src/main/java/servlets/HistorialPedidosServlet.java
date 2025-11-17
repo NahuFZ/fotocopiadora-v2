@@ -7,8 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.io.File;
 import java.io.IOException;
-
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -86,7 +87,7 @@ public class HistorialPedidosServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
+        // Tomamos la sesión existente sin crear una nueva en caso que exista.
         HttpSession session = request.getSession(false);
 
         // --- 1. Verificación de Seguridad (Sesión) ---
@@ -100,24 +101,47 @@ public class HistorialPedidosServlet extends HttpServlet {
         
         // --- 2. Lógica de Borrado ---
         if ("borrar".equals(action)) {
+
+            String rutaArchivo = null;
+            
             try {
-                int idTrabajo = Integer.parseInt(request.getParameter("idTrabajo"));
+            	int idTrabajo = Integer.parseInt(request.getParameter("idTrabajo"));
+
+                // PASO 1: Obtener la ruta del archivo ANTES de borrar el registro
+                rutaArchivo = trabajoDAO.getRutaArchivoParaBorrar(idTrabajo, idCliente);
                 
-                // Llamamos al DAO (que tiene seguridad interna)
-                trabajoDAO.borrarTrabajo(idTrabajo, idCliente);
-                
-                // (Opcional: añadir un mensaje de éxito)
-                
+                // PASO 2: Borrar el registro de la BBDD
+                boolean borradoExitoso = trabajoDAO.borrarTrabajo(idTrabajo, idCliente);
+
+                // PASO 3: Si la BBDD se borró Y encontramos una ruta de archivo...
+                if (borradoExitoso && rutaArchivo != null && !rutaArchivo.isEmpty()) {
+                    
+                    // PASO 4: Borrar el archivo físico
+                    try {
+                        File archivo = new File(rutaArchivo);
+                        if (archivo.exists()) {
+                            Files.delete(archivo.toPath());
+                            System.out.println("Archivo físico borrado exitosamente: " + rutaArchivo);
+                        } else {
+                             System.err.println("Advertencia: Se borró el registro de BBDD pero el archivo físico no se encontró en: " + rutaArchivo);
+                        }
+                    } catch (IOException e) {
+                        // Error Crítico: La BBDD se borró, pero el archivo no.
+                        // Esto debe registrarse.
+                        System.err.println("ERROR DE ROLLBACK: No se pudo borrar el archivo físico: " + rutaArchivo);
+                        e.printStackTrace();
+                        // (Opcional: Guardar un mensaje en sesión para el admin.)
+                    }
+                }
             } catch (NumberFormatException e) {
                 e.printStackTrace(); // Error si el idTrabajo no es un número
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace(); // Error de BBDD
             }
         }
-        
         // --- 3. Redirigir de vuelta al GET ---
         // Después de borrar (o fallar), siempre redirigimos de vuelta
         // al método GET para que recargue la lista actualizada.
-        response.sendRedirect("HistorialServlet");
+        response.sendRedirect("HistorialPedidosServlet");
     }
 }

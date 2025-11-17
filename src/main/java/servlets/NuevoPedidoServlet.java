@@ -44,15 +44,8 @@ import java.util.UUID; // Para nombres de archivo únicos
 public class NuevoPedidoServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // ---------------------------------------------------------------------------------
-    // ¡¡¡ ATENCIÓN !!! ¡¡¡ IMPORTANTE !!!
-    // TODO: Debes cambiar esta ruta a una carpeta REAL en tu computadora
-    // donde SÍ tengas permisos de escritura.
-    // Ejemplos: "C:/fotocopiadora_uploads/" (Windows)
-    //         "/home/usuario/fotocopiadora_uploads/" (Linux/Mac)
-    // ¡LA CARPETA DEBE EXISTIR!
+    // Directorio donde se guardan los archivos (solo Windows, implementación de otros OS en el futuro.
     private static final String UPLOADS_DIR = "C:\\Java\\archivos-fotocopiadora";
-    // ---------------------------------------------------------------------------------
     
     private TrabajoDAO trabajoDAO;
     
@@ -164,6 +157,9 @@ public class NuevoPedidoServlet extends HttpServlet {
             // Generamos un nombre único para evitar colisiones (ej. si dos suben "trabajo.pdf")
             // agrupamos un código único pseudoaleatorio junto al nombre del archivo
             nombreUnico = UUID.randomUUID().toString() + "_" + nombreArchivoOriginal;
+            if (nombreUnico.length() > 260) {
+            	nombreUnico = UUID.randomUUID().toString();
+            }
             File uploadsDir = new File(UPLOADS_DIR);
             
             // Verificamos si la carpeta de subida existe (por si acaso)
