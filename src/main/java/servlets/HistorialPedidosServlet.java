@@ -91,7 +91,7 @@ public class HistorialPedidosServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         // --- 1. Verificación de Seguridad (Sesión) ---
-        if (session == null || session.getAttribute("idUsuario") == null || !"cliente".equals(session.getAttribute("nombreRol"))) {
+        if (session == null || session.getAttribute("idUsuario") ==	 null || !"cliente".equals(session.getAttribute("nombreRol"))) {
             response.sendRedirect("login.jsp");
             return;
         }

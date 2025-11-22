@@ -134,7 +134,18 @@
             %>
             <tr>
                 <td><%= trabajo.getEstado() %></td>
-                <td><%= trabajo.getNombreArchivoOriginal() %></td>
+                <%-- Columna de Archivo con enlace de previsualización --%>
+                <td>
+                    <!-- 
+                         El enlace apunta al VerArchivoServlet con el ID del trabajo.
+                         target="_blank" abre una nueva pestaña.
+                    -->
+                    <a href="VerArchivoServlet?id=<%= trabajo.getIdTrabajo() %>" target="_blank" style="text-decoration: none; color: blue;">
+                        📄 <%= trabajo.getNombreArchivoOriginal() %>
+                    </a>
+                </td>
+                <%-- ============================================= --%>
+                
                 <td><%= trabajo.getNumCopias() %></td>
                 <td><%= trabajo.getCalidad() %></td>
                 <td><%= trabajo.getFaz() %></td>

@@ -155,12 +155,12 @@ public class TrabajoDAO {
     }
     
     /**
-     * Borra un trabajo específico.
-     * Solo permite borrar si el ID del cliente coincide Y el estado es "pendiente".
+     * Obtiene la ruta del archivo físico de un trabajo antes de borrarlo.
+     * También verifica la propiedad (idCliente) y el estado (pendiente) por seguridad.
      *
-     * @param idTrabajo El ID del trabajo a borrar.
-     * @param idCliente El ID del cliente (para seguridad).
-     * @return true si el borrado fue exitoso.
+     * @param idTrabajo El ID del trabajo.
+     * @param idCliente El ID del cliente que solicita el borrado.
+     * @return El String de la ruta_archivo, o null si no se encuentra.
      * @throws SQLException
      * @throws ClassNotFoundException
      */
@@ -193,6 +193,16 @@ public class TrabajoDAO {
         return rutaArchivo;
     }
     
+    /**
+     * Borra un trabajo específico.
+     * Solo permite borrar si el ID del cliente coincide Y el estado es "pendiente".
+     *
+     * @param idTrabajo El ID del trabajo a borrar.
+     * @param idCliente El ID del cliente (para seguridad).
+     * @return true si el borrado fue exitoso.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
     public boolean borrarTrabajo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
         
         String sql = "DELETE FROM trabajos WHERE idTrabajo = ? AND idCliente = ? AND estado = 'pendiente'";
@@ -219,6 +229,44 @@ public class TrabajoDAO {
 
         // Si filasAfectadas es > 0, significa que borró la fila.
         return filasAfectadas > 0;
+    }
+    
+    /**
+     * Obtiene un trabajo específico por su ID y el ID del cliente (seguridad).
+     * Útil para recuperar la ruta del archivo antes de visualizarlo.
+     */
+    public Trabajo getDatosArchivo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
+        
+        String sql = "SELECT ruta_archivo, nombre_archivo_original FROM trabajos WHERE idTrabajo = ? AND idCliente = ?";
+        Trabajo trabajo = null;
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, idTrabajo);
+            ps.setInt(2, idCliente);
+            
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                trabajo = new Trabajo();
+                // Solo llamamos estos dos campos
+                trabajo.setRutaArchivo(rs.getString("ruta_archivo"));
+                trabajo.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
+            }
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+
+        return trabajo;
     }
     // Aquí, en el futuro, irán otros métodos como:
     // public List<Trabajo> getAllTrabajos() { ... }
