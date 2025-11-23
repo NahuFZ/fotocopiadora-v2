@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 // Imports de clases de nuestro proyecto
 import db.DBConnection;
@@ -183,9 +185,101 @@ public class UsuarioDAO {
         return filasInsertadas > 0;
     }
     
+    // --- NUEVOS MÉTODOS PARA ADMINISTRADOR ---
+
+    /**
+     * Obtiene una lista de TODOS los usuarios registrados en el sistema.
+     * Incluye el nombre del rol para mostrarlo en la tabla.
+     */
+    public List<Usuario> obtenerTodosLosUsuarios() throws SQLException, ClassNotFoundException {
+        
+        List<Usuario> lista = new ArrayList<>();
+        
+        // Ordenamos por ID para que la tabla no salte al actualizar
+        String sql = "SELECT u.idUsuario, u.nombre_completo, u.email, u.esta_activo, r.idRol, r.nombre_rol " +
+                     "FROM usuarios u " +
+                     "JOIN roles r ON u.idRol = r.idRol " +
+                     "ORDER BY u.idUsuario ASC";
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Usuario u = new Usuario();
+                u.setIdUsuario(rs.getInt("idUsuario"));
+                u.setNombreCompleto(rs.getString("nombre_completo"));
+                u.setEmail(rs.getString("email"));
+                u.setEstaActivo(rs.getBoolean("esta_activo"));
+                u.setIdRol(rs.getInt("idRol"));
+                u.setNombreRol(rs.getString("nombre_rol"));
+                
+                lista.add(u);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+        
+        return lista;
+    }
+
+    /**
+     * Actualiza el rol de un usuario.
+     */
+    public boolean actualizarRol(int idUsuario, int idNuevoRol) throws SQLException, ClassNotFoundException {
+        String sql = "UPDATE usuarios SET idRol = ? WHERE idUsuario = ?";
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, idNuevoRol);
+            ps.setInt(2, idUsuario);
+            
+            return ps.executeUpdate() > 0;
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps);
+        }
+    }
+
+    /**
+     * Actualiza el estado (activo/inactivo) de un usuario.
+     */
+    public boolean cambiarEstadoCuenta(int idUsuario, boolean nuevoEstado) throws SQLException, ClassNotFoundException {
+        String sql = "UPDATE usuarios SET esta_activo = ? WHERE idUsuario = ?";
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setBoolean(1, nuevoEstado);
+            ps.setInt(2, idUsuario);
+            
+            return ps.executeUpdate() > 0;
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps);
+        }
+    }
     // Aquí se podrían agregar más métodos en el futuro:
     // - public Usuario obtenerUsuarioPorId(int idUsuario) { ... }
-    // - public List<Usuario> obtenerTodosLosUsuarios() { ... }
-    // - public boolean cambiarEstadoCuenta(int idUsuario, boolean estaActivo) { ... }
-    // - public boolean cambiarRolUsuario(int idUsuario, int idRol) { ... }
 }
