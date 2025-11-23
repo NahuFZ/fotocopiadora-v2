@@ -42,9 +42,8 @@ public class VerArchivoServlet extends HttpServlet {
             return;
         }
         
-        int idCliente = (Integer) session.getAttribute("idUsuario");
-        // Nota: Cuando hagamos la parte de Admin, aquí deberemos permitir
-        // también si el rol es "admin". Por ahora solo cliente.
+        int idUsuario = (Integer) session.getAttribute("idUsuario");
+        String nombreRol = (String) session.getAttribute("nombreRol");
         
         // 2. Obtener ID del trabajo en String
         String idTrabajoStr = request.getParameter("id");
@@ -55,9 +54,16 @@ public class VerArchivoServlet extends HttpServlet {
         
         try {
             int idTrabajo = Integer.parseInt(idTrabajoStr);
+            Trabajo trabajo = null;
             
             // 3. Buscar el trabajo en la BBDD
-            Trabajo trabajo = trabajoDAO.getDatosArchivo(idTrabajo, idCliente);
+            if ("admin".equals(nombreRol)) {
+                // Si es ADMIN, usa el método sin restricción de cliente
+                trabajo = trabajoDAO.getDatosArchivoAdmin(idTrabajo);
+            } else {
+                // Si es CLIENTE, usa el método seguro que verifica propiedad
+                trabajo = trabajoDAO.getDatosArchivo(idTrabajo, idUsuario);
+            }
             
             if (trabajo == null || trabajo.getRutaArchivo() == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND); // Archivo no encontrado en BBDD

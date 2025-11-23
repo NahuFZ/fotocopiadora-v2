@@ -232,7 +232,7 @@ public class TrabajoDAO {
     }
     
     /**
-     * Obtiene un trabajo específico por su ID y el ID del cliente (seguridad).
+     * Obtiene un trabajo específico por su ID y el ID del cliente (por seguridad).
      * Útil para recuperar la ruta del archivo antes de visualizarlo.
      */
     public Trabajo getDatosArchivo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
@@ -268,6 +268,44 @@ public class TrabajoDAO {
 
         return trabajo;
     }
+    
+    /**
+     * Obtiene datos del archivo sin validar el idCliente.
+     * ¡SOLO PARA USO DE ADMINISTRADORES!
+     */
+    public Trabajo getDatosArchivoAdmin(int idTrabajo) throws SQLException, ClassNotFoundException {
+        
+        // SELECT sin filtrar por cliente
+        String sql = "SELECT ruta_archivo, nombre_archivo_original FROM trabajos WHERE idTrabajo = ?";
+        Trabajo trabajo = null;
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, idTrabajo); // Solo un parámetro
+            
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                trabajo = new Trabajo();
+                trabajo.setRutaArchivo(rs.getString("ruta_archivo"));
+                trabajo.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
+            }
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+
+        return trabajo;
+    }
+    
     /**
      * Obtiene TODOS los trabajos de TODOS los clientes.
      * Incluye datos del cliente (nombre, email) mediante JOIN.
