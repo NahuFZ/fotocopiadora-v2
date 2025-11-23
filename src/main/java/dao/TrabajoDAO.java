@@ -268,6 +268,118 @@ public class TrabajoDAO {
 
         return trabajo;
     }
+    /**
+     * Obtiene TODOS los trabajos de TODOS los clientes.
+     * Incluye datos del cliente (nombre, email) mediante JOIN.
+     */
+    public List<Trabajo> getAllTrabajos(String filtroEstado, String orden) throws SQLException, ClassNotFoundException {
+        
+        List<Trabajo> lista = new ArrayList<>();
+        
+        // Hacemos JOIN con usuarios para saber de quién es el trabajo
+        StringBuilder sql = new StringBuilder(
+            "SELECT t.*, u.nombre_completo, u.email " +
+            "FROM trabajos t " +
+            "JOIN usuarios u ON t.idCliente = u.idUsuario " +
+            "WHERE 1=1 " // Truco para concatenar ANDs fácilmente
+        );
+
+        if (filtroEstado != null && !filtroEstado.isEmpty() && !filtroEstado.equals("todos")) {
+            sql.append(" AND t.estado = ? ");
+        }
+
+        // Ordenamiento
+        String orderBy = " ORDER BY t.fecha_solicitud DESC"; // Por defecto: lo más nuevo primero
+        if ("antiguo".equals(orden)) {
+            orderBy = " ORDER BY t.fecha_solicitud ASC";
+        } else if ("retiro_urgente".equals(orden)) {
+            orderBy = " ORDER BY t.fecha_retiro_solicitada ASC";
+        }
+        sql.append(orderBy);
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql.toString());
+            
+            // Seteamos parámetro de filtro si existe
+            if (filtroEstado != null && !filtroEstado.isEmpty() && !filtroEstado.equals("todos")) {
+                ps.setString(1, filtroEstado);
+            }
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Trabajo t = new Trabajo();
+                // Datos del Trabajo
+                t.setIdTrabajo(rs.getInt("idTrabajo"));
+                t.setIdCliente(rs.getInt("idCliente"));
+                t.setRutaArchivo(rs.getString("ruta_archivo"));
+                t.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
+                t.setNumCopias(rs.getInt("num_copias"));
+                t.setCalidad(rs.getString("calidad"));
+                t.setFaz(rs.getString("faz"));
+                t.setEstado(rs.getString("estado"));
+                t.setFechaSolicitud(rs.getTimestamp("fecha_solicitud"));
+                t.setFechaRetiroSolicitada(rs.getTimestamp("fecha_retiro_solicitada"));
+                t.setFechaImpresion(rs.getTimestamp("fecha_impresion"));
+                t.setFechaEntrega(rs.getTimestamp("fecha_entrega"));
+                
+                // Datos del Cliente (Extra)
+                t.setNombreCliente(rs.getString("nombre_completo"));
+                t.setEmailCliente(rs.getString("email"));
+                
+                lista.add(t);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+        
+        return lista;
+    }
+
+    /**
+     * Actualiza el estado de un trabajo y establece la fecha correspondiente.
+     */
+    public boolean actualizarEstadoTrabajo(int idTrabajo, String nuevoEstado) throws SQLException, ClassNotFoundException {
+        
+        StringBuilder sql = new StringBuilder("UPDATE trabajos SET estado = ? ");
+        
+        // Si pasa a 'terminado', actualizamos fecha_impresion
+        if ("terminado".equals(nuevoEstado)) {
+            sql.append(", fecha_impresion = NOW() ");
+        }
+        // Si pasa a 'retirado', actualizamos fecha_entrega
+        else if ("retirado".equals(nuevoEstado)) {
+            sql.append(", fecha_entrega = NOW() ");
+        }
+        
+        sql.append("WHERE idTrabajo = ?");
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql.toString());
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idTrabajo);
+            
+            return ps.executeUpdate() > 0;
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps);
+        }
+    }
     // Aquí, en el futuro, irán otros métodos como:
     // public List<Trabajo> getAllTrabajos() { ... }
     // public boolean cambiarEstado(int idTrabajo, String nuevoEstado) { ... }
