@@ -1,3 +1,4 @@
+<%@ page import="utils.Utils" %>
 <%-- 
   BLOQUE DE SEGURIDAD OBLIGATORIO
   Esto va ANTES de cualquier HTML.
@@ -5,29 +6,16 @@
   Si no lo es, lo expulsa al login.
 --%>
 <%
-    // 1. Obtener la sesión actual, sin crear una nueva si no existe
+	// 1. Comprueba sesión abierta de cliente
+	if (!Utils.esCliente(request, response)) {
+		return;
+	}
+
+    // 2. Obtener la sesión actual, sin crear una nueva si no existe
     HttpSession sesion = request.getSession(false);
+    String nombreRol = (String) sesion.getAttribute("nombreRol");
 
-    String nombreRol = null;
-    
-    if (sesion != null) {
-        // 2. Si hay sesión, obtener el rol
-        nombreRol = (String) sesion.getAttribute("nombreRol");
-    }
-
-    // 3. Comprobar la lógica de permisos
-    // Si no hay sesión, O no hay rol, O el rol NO es 'cliente'
-    if (sesion == null || nombreRol == null || !nombreRol.equals("cliente")) {
-        
-        // Preparamos un mensaje de error para el login
-        request.setAttribute("error", "Acceso denegado. Debe ser un cliente.");
-        
-        // Usamos forward para enviar el error a login.jsp
-        request.getRequestDispatcher("login.jsp").forward(request, response);
-        
-        // Detenemos la ejecución del resto del JSP
-        return; 
-    }
+ 	
     
     // Si llegamos aquí, el usuario es un CLIENTE validado.
     // Obtenemos su nombre para saludarlo.

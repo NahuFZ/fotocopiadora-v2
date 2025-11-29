@@ -196,7 +196,8 @@ public class UsuarioDAO {
         List<Usuario> lista = new ArrayList<>();
         
         // Ordenamos por ID para que la tabla no salte al actualizar
-        String sql = "SELECT u.idUsuario, u.nombre_completo, u.email, u.esta_activo, r.idRol, r.nombre_rol " +
+        // Evitamos usar u.* para que no nos envie la contraseña, ya que puede ser un problema de seguridad.
+        String sql = "SELECT u.idUsuario, u.nombre_completo, u.email, u.esta_activo, u.fecha_registro, r.idRol, r.nombre_rol " +
                      "FROM usuarios u " +
                      "JOIN roles r ON u.idRol = r.idRol " +
                      "ORDER BY u.idUsuario ASC";
@@ -216,6 +217,7 @@ public class UsuarioDAO {
                 u.setNombreCompleto(rs.getString("nombre_completo"));
                 u.setEmail(rs.getString("email"));
                 u.setEstaActivo(rs.getBoolean("esta_activo"));
+                u.setFechaRegistro(rs.getTimestamp("fecha_registro"));
                 u.setIdRol(rs.getInt("idRol"));
                 u.setNombreRol(rs.getString("nombre_rol"));
                 

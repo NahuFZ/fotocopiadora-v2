@@ -1,6 +1,7 @@
 package clases;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  * Clase JavaBean (o POJO, o Modelo) que representa la entidad 'Usuarios'.
@@ -20,9 +21,11 @@ public class Usuario implements Serializable {
     private String email;
     private String nombreCompleto;
     private boolean estaActivo;
+    private Timestamp fechaRegistro;
     
     
- // Atributo extra: Lo rellenaremos con un JOIN en el DAO.
+
+	// Atributo extra: Lo rellenaremos con un JOIN en el DAO.
     // Es útil para que el Servlet sepa el nombre del rol sin hacer otra consulta.
     private String nombreRol;
     
@@ -74,7 +77,12 @@ public class Usuario implements Serializable {
 	public void setEstaActivo(boolean estaActivo) {
 		this.estaActivo = estaActivo;
 	}
-	
+	public Timestamp getFechaRegistro() {
+		return fechaRegistro;
+	}
+	public void setFechaRegistro(Timestamp fechaRegistro) {
+		this.fechaRegistro = fechaRegistro;
+	}
 	public String getNombreRol() {
 			return nombreRol;
 	}

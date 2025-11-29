@@ -1,14 +1,14 @@
 <%@ page import="java.util.List" %>
 <%@ page import="clases.Trabajo" %>
 <%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="utils.Utils" %>
 
 <%-- SEGURIDAD --%>
 <%
-    HttpSession sesion = request.getSession(false);
-    if (sesion == null || !"admin".equals(sesion.getAttribute("nombreRol"))) {
-        response.sendRedirect("login.jsp");
-        return;
-    }
+	// Comprueba sesión abierta por un administrador.
+	if (!Utils.esAdmin(request, response)) {
+		return;
+	}
     
     List<Trabajo> listaTrabajos = (List<Trabajo>) request.getAttribute("listaTrabajos");
     String filtroEstadoActual = (String) request.getAttribute("filtroEstadoActual");

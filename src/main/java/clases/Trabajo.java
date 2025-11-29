@@ -10,8 +10,8 @@ public class Trabajo implements Serializable {
     // --- Atributos de la BBDD ---
     private int idTrabajo;
     private int idCliente; // La clave foránea
-    private String rutaArchivo;
-    private String nombreArchivoOriginal;
+    private String nombreArchivo; // Nombre con el que fue guardado el archivo en la BBDD
+    private String nombreArchivoOriginal; // Nombre con el que el cliente subió el archivo
     private int numCopias;
     private String calidad; // 'blanco_y_negro' o 'color'
     private String faz;     // 'simple' o 'doble'
@@ -50,11 +50,11 @@ public class Trabajo implements Serializable {
 	public void setIdCliente(int idCliente) {
 		this.idCliente = idCliente;
 	}
-	public String getRutaArchivo() {
-		return rutaArchivo;
+	public String getNombreArchivo() {
+		return nombreArchivo;
 	}
-	public void setRutaArchivo(String rutaArchivo) {
-		this.rutaArchivo = rutaArchivo;
+	public void setNombreArchivo(String nombreArchivo) {
+		this.nombreArchivo = nombreArchivo;
 	}
 	public String getNombreArchivoOriginal() {
 		return nombreArchivoOriginal;

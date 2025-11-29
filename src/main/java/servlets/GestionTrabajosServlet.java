@@ -6,7 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import utils.Utils;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,16 +25,17 @@ public class GestionTrabajosServlet extends HttpServlet {
         this.trabajoDAO = new TrabajoDAO();
     }
 
+    /**
+     * GET: O
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Seguridad: Solo Admin
-        HttpSession session = request.getSession(false);
-        if (session == null || !"admin".equals(session.getAttribute("nombreRol"))) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
+    	// 1. Seguridad: Comprueba sesión abierta por un administrador.
+    	if (!Utils.esAdmin(request, response)) {
+    		return;
+    	}
 
         // 2. Obtener Filtros
         String filtroEstado = request.getParameter("filtroEstado"); // "pendiente", "terminado", "todos"
@@ -61,17 +62,17 @@ public class GestionTrabajosServlet extends HttpServlet {
             response.sendRedirect("paginaPrincipalAdmin.jsp");
         }
     }
-
+    /**
+     * POST: 
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Seguridad
-        HttpSession session = request.getSession(false);
-        if (session == null || !"admin".equals(session.getAttribute("nombreRol"))) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
+    	// Comprueba sesión abierta por un administrador.
+    	if (!Utils.esAdmin(request, response)) {
+    		return;
+    	}
         
         String accion = request.getParameter("accion");
         

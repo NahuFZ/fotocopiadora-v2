@@ -2,26 +2,20 @@
 <%@ page import="java.util.List" %>
 <%@ page import="clases.Trabajo" %>
 <%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="utils.Utils" %>
 
 <%-- 
   BLOQUE DE SEGURIDAD OBLIGATORIO
   Verifica si el usuario está logueado y si es un 'cliente'.
 --%>
 <%
-    // 1. Obtener la sesión actual
+	// 1. Comprueba sesión abierta de cliente
+	if (!Utils.esCliente(request, response)) {
+		return;
+	}
+    // 2. Obtener la sesión actual
     HttpSession sesion = request.getSession(false);
-    String nombreRol = null;
-    
-    if (sesion != null) {
-        nombreRol = (String) sesion.getAttribute("nombreRol");
-    }
-
-    // 2. Comprobar permisos
-    if (sesion == null || nombreRol == null || !nombreRol.equals("cliente")) {
-        request.setAttribute("error", "Acceso denegado. Debe iniciar sesión como cliente.");
-        request.getRequestDispatcher("login.jsp").forward(request, response);
-        return; 
-    }
+    String nombreRol = (String) sesion.getAttribute("nombreRol");
     
     // --- Si llegamos aquí, es un cliente válido ---
     
@@ -147,7 +141,19 @@
                 <%-- ============================================= --%>
                 
                 <td><%= trabajo.getNumCopias() %></td>
-                <td><%= trabajo.getCalidad() %></td>
+                <%-- Se agrega este bloque para que blanco y negro no se vea con guiones bajos --%>
+                <td>
+                    <%
+                        String calidad = trabajo.getCalidad();
+                        if ("blanco_y_negro".equals(calidad)) {
+                            out.print("Blanco y Negro");
+                        } else if ("color".equals(calidad)) {
+                            out.print("Color"); // Lo capitalizamos también
+                        } else {
+                            out.print(calidad); // Por si acaso
+                        }
+                    %>
+                </td>
                 <td><%= trabajo.getFaz() %></td>
                 
                 <%-- Formateamos las fechas para que sean legibles --%>

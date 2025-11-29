@@ -1,3 +1,4 @@
+<%@ page import="utils.Utils" %>
 <%-- 
   BLOQUE DE SEGURIDAD OBLIGATORIO
   Esto va ANTES de cualquier HTML.
@@ -5,9 +6,13 @@
   Si no lo es, lo expulsa al login.
 --%>
 <%
-    // 1. Obtener la sesión actual, sin crear una nueva si no existe
-    HttpSession sesion = request.getSession(false);
+	//Comprueba sesión abierta por un administrador.
+	if (!Utils.esAdmin(request, response)) {
+		return;
+	}
 
+	// 1. Obtener la sesión actual, sin crear una nueva si no existe
+    HttpSession sesion = request.getSession(false);
     String nombreRol = null;
     
     if (sesion != null) {
@@ -15,19 +20,7 @@
         nombreRol = (String) sesion.getAttribute("nombreRol");
     }
 
-    // 3. Comprobar la lógica de permisos
-    if (sesion == null || nombreRol == null || !nombreRol.equals("admin")) {
-        // No hay sesión, o no hay rol, o el rol no es 'admin'
-        
-        // Preparamos un mensaje de error para el login
-        request.setAttribute("error", "Acceso denegado. Debe ser administrador.");
-        
-        // Usamos forward para enviar el error a login.jsp
-        request.getRequestDispatcher("login.jsp").forward(request, response);
-        
-        // Detenemos la ejecución del resto del JSP
-        return; 
-    }
+ 	
     
     // Si llegamos aquí, el usuario es un admin validado.
     // Obtenemos su nombre para saludarlo.
@@ -61,12 +54,13 @@
     <div style="margin-top: 20px;">
         
         <!-- Botón 1: Gestionar Trabajos -->
-        <form action="gestionTrabajos.jsp" method="GET" style="display: inline-block;">
+        <!-- Apunta a GestionTrabajosServlet para que la tabla se muestra al apretar el botón -->
+        <form action="GestionTrabajosServlet" method="GET" style="display: inline-block;">
             <button type="submit">Gestionar Trabajos de Clientes</button>
         </form>
         
         <!-- Botón 2: Gestionar Cuentas -->
-        <form action="gestionCuentas.jsp" method="GET" style="display: inline-block;">
+        <form action="GestionCuentasServlet" method="GET" style="display: inline-block;">
             <button type="submit">Gestionar Cuentas de Usuarios</button>
         </form>
         

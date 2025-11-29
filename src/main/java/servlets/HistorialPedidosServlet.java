@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import utils.AppConfig;
+import utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,15 +38,14 @@ public class HistorialPedidosServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Con false evitamos crear una sesión si esta no existe.
+        
+    	// --- 1. Comprueba sesión abierta de cliente ---
+    	if (!Utils.esCliente(request, response)) {
+    		return;
+    	}
+    	
+    	// Con false evitamos crear una sesión si esta no existe.
         HttpSession session = request.getSession(false);
-
-        // --- 1. Verificación de Seguridad (Sesión) ---
-        if (session == null || session.getAttribute("idUsuario") == null || !"cliente".equals(session.getAttribute("nombreRol"))) {
-            request.setAttribute("error", "Acceso denegado. Debe iniciar sesión como cliente.");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
-            return;
-        }
         
         int idCliente = (Integer) session.getAttribute("idUsuario");
         
@@ -87,14 +88,13 @@ public class HistorialPedidosServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Tomamos la sesión existente sin crear una nueva en caso que exista.
+    	// --- 1. Comprueba sesión abierta de cliente ---
+    	if (!Utils.esCliente(request, response)) {
+    		return;
+    	}
+    	
+    	// Tomamos la sesión existente sin crear una nueva en caso que exista.
         HttpSession session = request.getSession(false);
-
-        // --- 1. Verificación de Seguridad (Sesión) ---
-        if (session == null || session.getAttribute("idUsuario") ==	 null || !"cliente".equals(session.getAttribute("nombreRol"))) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
         
         int idCliente = (Integer) session.getAttribute("idUsuario");
         String action = request.getParameter("action");
@@ -102,33 +102,33 @@ public class HistorialPedidosServlet extends HttpServlet {
         // --- 2. Lógica de Borrado ---
         if ("borrar".equals(action)) {
 
-            String rutaArchivo = null;
+            String nombreArchivoGuardado = null;
             
             try {
             	int idTrabajo = Integer.parseInt(request.getParameter("idTrabajo"));
 
                 // PASO 1: Obtener la ruta del archivo ANTES de borrar el registro
-                rutaArchivo = trabajoDAO.getRutaArchivoParaBorrar(idTrabajo, idCliente);
+                nombreArchivoGuardado = trabajoDAO.getNombreArchivoParaBorrar(idTrabajo, idCliente);
                 
                 // PASO 2: Borrar el registro de la BBDD
                 boolean borradoExitoso = trabajoDAO.borrarTrabajo(idTrabajo, idCliente);
 
                 // PASO 3: Si la BBDD se borró Y encontramos una ruta de archivo...
-                if (borradoExitoso && rutaArchivo != null && !rutaArchivo.isEmpty()) {
+                if (borradoExitoso && nombreArchivoGuardado != null && !nombreArchivoGuardado.isEmpty()) {
                     
                     // PASO 4: Borrar el archivo físico
                     try {
-                        File archivo = new File(rutaArchivo);
+                        File archivo = new File(AppConfig.DIRECTORIO_ARCHIVOS, nombreArchivoGuardado);
                         if (archivo.exists()) {
                             Files.delete(archivo.toPath());
-                            System.out.println("Archivo físico borrado exitosamente: " + rutaArchivo);
+                            System.out.println("Archivo físico borrado exitosamente: " + nombreArchivoGuardado);
                         } else {
-                             System.err.println("Advertencia: Se borró el registro de BBDD pero el archivo físico no se encontró en: " + rutaArchivo);
+                             System.err.println("Advertencia: Se borró el registro de BBDD pero el archivo físico no se encontró en: " + nombreArchivoGuardado);
                         }
                     } catch (IOException e) {
                         // Error Crítico: La BBDD se borró, pero el archivo no.
                         // Esto debe registrarse.
-                        System.err.println("ERROR DE ROLLBACK: No se pudo borrar el archivo físico: " + rutaArchivo);
+                        System.err.println("ERROR DE ROLLBACK: No se pudo borrar el archivo físico: " + nombreArchivoGuardado);
                         e.printStackTrace();
                         // (Opcional: Guardar un mensaje en sesión para el admin.)
                     }

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import utils.Utils;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,13 +37,11 @@ public class GestionCuentasServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Seguridad: Solo Admins
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("idUsuario") == null || !"admin".equals(session.getAttribute("nombreRol"))) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
-
+        // 1. Seguridad: Comprueba sesión abierta por un administrador.
+    	if (!Utils.esAdmin(request, response)) {
+    		return;
+    	}
+        
         try {
             // 2. Obtener los usuarios y los roles existentes.
             List<Usuario> listaUsuarios = usuarioDAO.obtenerTodosLosUsuarios();
@@ -65,14 +64,13 @@ public class GestionCuentasServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
-        // 1. Seguridad
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("idUsuario") == null || !"admin".equals(session.getAttribute("nombreRol"))) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
-        
+
+    	// 1. Seguridad: Comprueba sesión abierta por un administrador.
+    	if (!Utils.esAdmin(request, response)) {
+    		return;
+    	}
+    	
+    	HttpSession session = request.getSession(false);
         String accion = request.getParameter("accion");
         String idUsuarioStr = request.getParameter("idUsuario");
         

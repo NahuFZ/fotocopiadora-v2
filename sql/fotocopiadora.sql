@@ -41,7 +41,7 @@ CREATE TABLE `roles` (
 CREATE TABLE `trabajos` (
   `idTrabajo` int(11) NOT NULL COMMENT 'Identificador para el trabajo/pedido.',
   `idCliente` int(11) NOT NULL COMMENT 'Clave foránea que indica el usuario solicitó el trabajo.',
-  `ruta_archivo` varchar(255) NOT NULL COMMENT 'Ubicación del directorio donde se guarda el archivo a imprimir.',
+  `nombre_archivo` varchar(255) NOT NULL COMMENT 'Nombre con el que se guarda el archivo a imprimir.',
   `nombre_archivo_original` varchar(255) NOT NULL COMMENT '	Nombre original del archivo que subió el cliente.',
   `num_copias` int(11) NOT NULL COMMENT 'Cantidad de copias que se van a imprimir.',
   `calidad` enum('blanco_y_negro','color') NOT NULL COMMENT 'Calidad de la impresión. Valores: ''blanco_y_negro'', ''color''.',

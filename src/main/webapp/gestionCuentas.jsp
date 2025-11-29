@@ -1,20 +1,25 @@
 <%@ page import="java.util.List" %>
 <%@ page import="clases.Usuario" %>
 <%@ page import="clases.Rol" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="utils.Utils" %>
 
 <%-- BLOQUE DE SEGURIDAD --%>
 <%
-    HttpSession sesion = request.getSession(false);
-    if (sesion == null || session.getAttribute("idUsuario") == null || !"admin".equals(sesion.getAttribute("nombreRol"))) {
-        response.sendRedirect("login.jsp");
-        return;
-    }
-    
+	// Comprueba sesión abierta de administrador
+	if (!Utils.esAdmin(request, response)) {
+		return;
+	}
+
+	HttpSession sesion = request.getSession(false);
     int idAdminLogueado = (Integer) sesion.getAttribute("idUsuario");
     
     // Recuperamos las listas enviadas por el Servlet
     List<Usuario> listaUsuarios = (List<Usuario>) request.getAttribute("listaUsuarios");
     List<Rol> listaRoles = (List<Rol>) request.getAttribute("listaRoles");
+
+    // Establecemos el formato para la fecha de creación del usuario
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 %>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8"
@@ -44,7 +49,7 @@
     <%
         // Mostrar mensajes de error
         String errorParam = request.getParameter("error");
-    	// Error de auto-modificación
+    	// Error de auto-modificación del servlet
         if ("self_mod".equals(errorParam)) {
             out.print("<p style='color:red; font-weight:bold;'>Error: No puedes modificar tu propia cuenta.</p>");
         }
@@ -57,6 +62,7 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Estado</th>
+                <th>Fecha creación</th>
                 <th>Rol Actual</th>
                 <th>Acciones de Rol</th>
                 <th>Acciones de Estado</th>
@@ -81,7 +87,7 @@
                         <span style="color:red; font-weight:bold;">Inactivo</span>
                     <% } %>
                 </td>
-                
+                <td><%= sdf.format(u.getFechaRegistro()) %></td>
                 <td><%= u.getNombreRol() %></td>
                 
                 <%-- ACCIÓN 1: CAMBIAR ROL --%>

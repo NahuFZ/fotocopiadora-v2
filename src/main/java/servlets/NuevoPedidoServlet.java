@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part; // <-- Importante para archivos
+import utils.AppConfig;
+import utils.Utils;
 
 //Imports de I/O (Input/Output) para guardar el archivo
 import java.io.File;
@@ -44,9 +46,6 @@ import java.util.UUID; // Para nombres de archivo únicos
 public class NuevoPedidoServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // Directorio donde se guardan los archivos (solo Windows, implementación de otros OS en el futuro.
-    private static final String UPLOADS_DIR = "C:\\Java\\archivos-fotocopiadora";
-    
     private TrabajoDAO trabajoDAO;
     
     public NuevoPedidoServlet() {
@@ -69,15 +68,13 @@ public class NuevoPedidoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+    	// --- 1. Comprueba sesión abierta de cliente ---
+    	if (!Utils.esCliente(request, response)) {
+    		return;
+    	}
+    	
         List<String> errores = new ArrayList<>();
         HttpSession session = request.getSession(false);
-
-        // --- 1. Verificación de Seguridad (Sesión) ---
-        if (session == null || session.getAttribute("idUsuario") == null || !"cliente".equals(session.getAttribute("nombreRol"))) {
-            request.setAttribute("error", "Acceso denegado. Debe iniciar sesión como cliente.");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
-            return;
-        }
         
         // Obtenemos el ID del cliente logueado desde la sesión
         int idCliente = (Integer) session.getAttribute("idUsuario");
@@ -160,14 +157,9 @@ public class NuevoPedidoServlet extends HttpServlet {
             if (nombreUnico.length() > 260) {
             	nombreUnico = UUID.randomUUID().toString();
             }
-            File uploadsDir = new File(UPLOADS_DIR);
-            
-            // Verificamos si la carpeta de subida existe (por si acaso)
-            if (!uploadsDir.exists()) {
-                uploadsDir.mkdirs(); // Si no existe, intenta crearla
-            }
-            
-            archivoGuardado = new File(uploadsDir, nombreUnico);
+            // USAMOS LA RUTA DE LA CLASE DE CONFIGURACIÓN
+            File uploadsDir = new File(AppConfig.DIRECTORIO_ARCHIVOS);
+            archivoGuardado = new File(uploadsDir, nombreUnico); // Combinamos Ruta + Nombre
             
             // Usamos try-with-resources para copiar el stream del archivo (es decir, sus datos binarios)
             // Luego los copia en la ubicación designada.
@@ -184,8 +176,8 @@ public class NuevoPedidoServlet extends HttpServlet {
             nuevoTrabajo.setFechaRetiroSolicitada(fechaRetiroTimestamp);
             nuevoTrabajo.setNombreArchivoOriginal(nombreArchivoOriginal);
             
-            // Guardamos la RUTA COMPLETA donde se guardó el archivo
-            nuevoTrabajo.setRutaArchivo(archivoGuardado.getAbsolutePath());
+            // Guardamos el nombre con el que se guardó el archivo
+            nuevoTrabajo.setNombreArchivo(nombreUnico);
 
             // 5.3. Llamar al DAO para insertar en la BBDD
             boolean exito = trabajoDAO.crearTrabajo(nuevoTrabajo);

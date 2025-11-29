@@ -1,25 +1,17 @@
+<%@ page import="utils.Utils" %>
 <%-- 
   BLOQUE DE SEGURIDAD OBLIGATORIO
   Verifica si el usuario está logueado y si es un 'cliente'.
 --%>
 <%
+	// Comprueba sesión abierta de cliente
+	if (!Utils.esCliente(request, response)) {
+		return;
+	}
+
     // 1. Obtener la sesión actual, sin crear una nueva si no existe
     HttpSession sesion = request.getSession(false);
-
-    String nombreRol = null;
-    
-    if (sesion != null) {
-        // 2. Si hay sesión, obtener el rol
-        nombreRol = (String) sesion.getAttribute("nombreRol");
-    }
-
-    // 3. Comprobar la lógica de permisos
-    if (sesion == null || nombreRol == null || !nombreRol.equals("cliente")) {
-        // No hay sesión, o no hay rol, o el rol NO es 'cliente'
-        request.setAttribute("error", "Acceso denegado. Debe iniciar sesión como cliente.");
-        request.getRequestDispatcher("login.jsp").forward(request, response);
-        return; 
-    }
+    String nombreRol = (String) sesion.getAttribute("nombreRol");
 %>
 
 <%-- 

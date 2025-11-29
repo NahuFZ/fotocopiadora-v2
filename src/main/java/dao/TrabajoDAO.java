@@ -27,7 +27,7 @@ public class TrabajoDAO {
         
         // El SQL omite idTrabajo (AUTO_INCREMENT), estado (DEFAULT 'pendiente'),
         // y fecha_solicitud (DEFAULT current_timestamp()).
-        String sql = "INSERT INTO trabajos (idCliente, ruta_archivo, nombre_archivo_original, " +
+        String sql = "INSERT INTO trabajos (idCliente, nombre_archivo, nombre_archivo_original, " +
                      "num_copias, calidad, faz, fecha_retiro_solicitada) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
         
@@ -41,7 +41,7 @@ public class TrabajoDAO {
             
             // Seteamos los parámetros del PreparedStatement
             ps.setInt(1, trabajo.getIdCliente());
-            ps.setString(2, trabajo.getRutaArchivo());
+            ps.setString(2, trabajo.getNombreArchivo());
             ps.setString(3, trabajo.getNombreArchivoOriginal());
             ps.setInt(4, trabajo.getNumCopias());
             ps.setString(5, trabajo.getCalidad());
@@ -131,7 +131,7 @@ public class TrabajoDAO {
                 Trabajo trabajo = new Trabajo();
                 trabajo.setIdTrabajo(rs.getInt("idTrabajo"));
                 trabajo.setIdCliente(rs.getInt("idCliente"));
-                trabajo.setRutaArchivo(rs.getString("ruta_archivo"));
+                trabajo.setNombreArchivo(rs.getString("nombre_archivo"));
                 trabajo.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
                 trabajo.setNumCopias(rs.getInt("num_copias"));
                 trabajo.setCalidad(rs.getString("calidad"));
@@ -155,18 +155,18 @@ public class TrabajoDAO {
     }
     
     /**
-     * Obtiene la ruta del archivo físico de un trabajo antes de borrarlo.
+     * Obtiene el nombre del archivo físico de un trabajo antes de borrarlo.
      * También verifica la propiedad (idCliente) y el estado (pendiente) por seguridad.
      *
      * @param idTrabajo El ID del trabajo.
      * @param idCliente El ID del cliente que solicita el borrado.
-     * @return El String de la ruta_archivo, o null si no se encuentra.
+     * @return El String de la nombre_archivo, o null si no se encuentra.
      * @throws SQLException
      * @throws ClassNotFoundException
      */
-    public String getRutaArchivoParaBorrar(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
+    public String getNombreArchivoParaBorrar(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
         
-        String sql = "SELECT ruta_archivo FROM trabajos WHERE idTrabajo = ? AND idCliente = ? AND estado = 'pendiente'";
+        String sql = "SELECT nombre_archivo FROM trabajos WHERE idTrabajo = ? AND idCliente = ? AND estado = 'pendiente'";
         String rutaArchivo = null;
         
         Connection conn = null;
@@ -181,7 +181,7 @@ public class TrabajoDAO {
             rs = ps.executeQuery();
             
             if (rs.next()) {
-                rutaArchivo = rs.getString("ruta_archivo");
+                rutaArchivo = rs.getString("nombre_archivo");
             }
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -233,11 +233,11 @@ public class TrabajoDAO {
     
     /**
      * Obtiene un trabajo específico por su ID y el ID del cliente (por seguridad).
-     * Útil para recuperar la ruta del archivo antes de visualizarlo.
+     * El trabajo incluye el nombre con el que fue guardado el archivo y el nombre que le puso el usuario.
      */
     public Trabajo getDatosArchivo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
         
-        String sql = "SELECT ruta_archivo, nombre_archivo_original FROM trabajos WHERE idTrabajo = ? AND idCliente = ?";
+        String sql = "SELECT nombre_archivo, nombre_archivo_original FROM trabajos WHERE idTrabajo = ? AND idCliente = ?";
         Trabajo trabajo = null;
         
         Connection conn = null;
@@ -255,7 +255,7 @@ public class TrabajoDAO {
             if (rs.next()) {
                 trabajo = new Trabajo();
                 // Solo llamamos estos dos campos
-                trabajo.setRutaArchivo(rs.getString("ruta_archivo"));
+                trabajo.setNombreArchivo(rs.getString("nombre_archivo"));
                 trabajo.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
             }
             
@@ -276,7 +276,7 @@ public class TrabajoDAO {
     public Trabajo getDatosArchivoAdmin(int idTrabajo) throws SQLException, ClassNotFoundException {
         
         // SELECT sin filtrar por cliente
-        String sql = "SELECT ruta_archivo, nombre_archivo_original FROM trabajos WHERE idTrabajo = ?";
+        String sql = "SELECT nombre_archivo, nombre_archivo_original FROM trabajos WHERE idTrabajo = ?";
         Trabajo trabajo = null;
         
         Connection conn = null;
@@ -292,7 +292,7 @@ public class TrabajoDAO {
 
             if (rs.next()) {
                 trabajo = new Trabajo();
-                trabajo.setRutaArchivo(rs.getString("ruta_archivo"));
+                trabajo.setNombreArchivo(rs.getString("nombre_archivo"));
                 trabajo.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
             }
             
@@ -355,7 +355,7 @@ public class TrabajoDAO {
                 // Datos del Trabajo
                 t.setIdTrabajo(rs.getInt("idTrabajo"));
                 t.setIdCliente(rs.getInt("idCliente"));
-                t.setRutaArchivo(rs.getString("ruta_archivo"));
+                t.setNombreArchivo(rs.getString("nombre_archivo"));
                 t.setNombreArchivoOriginal(rs.getString("nombre_archivo_original"));
                 t.setNumCopias(rs.getInt("num_copias"));
                 t.setCalidad(rs.getString("calidad"));

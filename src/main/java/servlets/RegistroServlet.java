@@ -82,7 +82,7 @@ public class RegistroServlet extends HttpServlet {
         if (!errores.isEmpty()) {
             // Si hay errores de validación, no conectamos a la BBDD.
             // Reenviamos al usuario al formulario con la lista de errores.
-            enviarErrores(request, response, errores);
+        	enviarErrores(request, response, errores);
             return; // Detenemos la ejecución
         }
         

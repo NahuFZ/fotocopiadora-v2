@@ -50,9 +50,6 @@ public class LoginServlet extends HttpServlet {
 
         // 2. Lógica de login dentro de un try-catch
         try {
-            
-            // --- INICIO DEL "CAMINO FELIZ" ---
-            
             // 2.1. Validar credenciales usando el DAO
             // Este método AHORA solo devuelve un Usuario o lanza AuthException
             Usuario usuario = usuarioDAO.validarLogin(email, password);

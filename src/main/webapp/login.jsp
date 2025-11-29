@@ -1,10 +1,3 @@
-<%-- 
-  Esta línea importa la JSTL (Java Standard Tag Library).
-  Es necesaria para usar la lógica <c:if> que mostrará los errores.
-  Deberás asegurarte de tener la dependencia de JSTL en tu proyecto.
-  
-  <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
---%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -12,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <%-- Establece que la página debe ser del ancho de la pantalla del usuario
-    (sirve para que sea visible en teléfonos) y establece el zoom por defecto en 
+    (sirve para que sea visible en cualquier tipo de pantalla) y establece el zoom por defecto en 
     100%. --%>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Fotocopiadora</title>
@@ -28,7 +21,7 @@
       como los éxitos (enviados como Parámetro).
     --%>
     <%
-        // 1. Revisar si hay un mensaje de ERROR (del LoginServlet)
+        // 1. Revisar si hay un mensaje de ERROR
         Object errorObj = request.getAttribute("error");
         if (errorObj != null) {
             String errorMsg = errorObj.toString();
@@ -47,7 +40,7 @@
     <%-- 
       Este es el formulario de login.
       - 'action="LoginServlet"' define el Servlet que procesará los datos.
-      - 'method="POST"' es fundamental para enviar contraseñas de forma segura.
+      - 'method="POST"' es el método usado para enviar información sensible (como contraseñas).
     --%>
     <form action="LoginServlet" method="POST">
         <div>

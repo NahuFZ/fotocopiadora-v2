@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import utils.AppConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,13 +66,17 @@ public class VerArchivoServlet extends HttpServlet {
                 trabajo = trabajoDAO.getDatosArchivo(idTrabajo, idUsuario);
             }
             
-            if (trabajo == null || trabajo.getRutaArchivo() == null) {
+            // Tomamos el nombre con el que fue guardado el archivo.
+            String nombreArchivoGuardado = trabajo.getNombreArchivo();
+            
+            if (trabajo == null || nombreArchivoGuardado == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND); // Archivo no encontrado en BBDD
                 return;
             }
             
             // 4. Localizar el archivo físico
-            File archivo = new File(trabajo.getRutaArchivo());
+            // Combinamos la constante global + el nombre que vino de la BBDD
+            File archivo = new File(AppConfig.DIRECTORIO_ARCHIVOS, nombreArchivoGuardado);
             
             if (!archivo.exists()) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND); // Archivo no encontrado en Disco
