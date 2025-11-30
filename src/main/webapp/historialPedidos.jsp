@@ -53,6 +53,17 @@
 
     <h1>Mi Historial de Pedidos</h1>
     
+    <%-- MOSTRAMOS ERRORES --%>
+    <%
+    // Revisar si hay un mensaje de ERROR
+    Object errorObj = request.getAttribute("error");
+    if (errorObj != null) {
+        String errorMsg = errorObj.toString();
+        // Imprimimos el HTML del error
+        out.print("<p style='color: red; font-weight: bold;'> Error: " + errorMsg + "</p>");
+    } 
+    %>
+    
     <%-- 
       BLOQUE DE FILTROS
       Este formulario "recarga" la página (enviando a HistorialPedidosServlet GET)

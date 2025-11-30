@@ -114,7 +114,7 @@ public class RegistroServlet extends HttpServlet {
         } catch (SQLException | ClassNotFoundException e) {
             // Captura de cualquier otro error (ej. BBDD caída, Driver no encontrado)
             e.printStackTrace(); // Imprime el error en la consola de Tomcat
-            errores.add("Error de conexión con la base de datos. Intente más tarde.");
+            errores.add("Error de conexión con la base de datos. Intentelo más tarde.");
             enviarErrores(request, response, errores);
         }
     }

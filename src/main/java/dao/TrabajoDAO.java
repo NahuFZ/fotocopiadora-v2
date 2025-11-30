@@ -300,6 +300,7 @@ public class TrabajoDAO {
             e.printStackTrace();
             throw e;
         } finally {
+        	// Cerramos la conexión con la base de datos.
             DBConnection.close(conn, ps, rs);
         }
 

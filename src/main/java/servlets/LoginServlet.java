@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
+import utils.Utils;
 import clases.Usuario;
 import exceptions.AuthException;
 import dao.UsuarioDAO;
@@ -89,20 +89,9 @@ public class LoginServlet extends HttpServlet {
             String mensajeError = e.getMessage();
             
             // Usamos nuestra función de ayuda para enviar el error a login.jsp
-            enviarError(request, response, mensajeError);
+            Utils.enviarError(request, response, mensajeError, "login.jsp");
         } 
         // (Dejamos que otros errores, como ServletException, se propaguen)
 	}
-	  /**
-     * Método de ayuda para reenviar al usuario a login.jsp con un mensaje de error.
-     */
-    private void enviarError(HttpServletRequest request, HttpServletResponse response, String mensaje)
-            throws ServletException, IOException {
 
-        // 1. Pone el mensaje de error en el "request" (la "mochila")
-        request.setAttribute("error", mensaje);
-
-        // 2. Reenvía al usuario (y la mochila con el error) a login.jsp
-        request.getRequestDispatcher("login.jsp").forward(request, response);
-    }
 }

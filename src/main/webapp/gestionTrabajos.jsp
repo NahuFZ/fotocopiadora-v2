@@ -41,6 +41,17 @@
     <a href="paginaPrincipalAdmin.jsp">&lt;&lt; Volver al Panel</a>
     <h1>Gestión de Trabajos</h1>
 
+	<%-- MOSTRAR ERRORES --%>
+	<%
+	// Revisar si hay un mensaje de ERROR
+    Object errorObj = request.getAttribute("error");
+    if (errorObj != null) {
+        String errorMsg = errorObj.toString();
+        // Imprimimos el HTML del error
+        out.print("<p style='color: red; font-weight: bold;'> Error: " + errorMsg + "</p>");
+    } 
+    %>
+	
     <%-- FILTROS --%>
     <form action="GestionTrabajosServlet" method="GET" style="background: #eee; padding: 10px;">
         <label>Estado:</label>

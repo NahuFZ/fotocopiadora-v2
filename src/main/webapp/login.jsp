@@ -26,7 +26,7 @@
         if (errorObj != null) {
             String errorMsg = errorObj.toString();
             // Imprimimos el HTML del error
-            out.print("<p style='color: red; font-weight: bold;'>" + errorMsg + "</p>");
+            out.print("<p style='color: red; font-weight: bold;'> Error: " + errorMsg + "</p>");
         }
         
         // 2. Revisar si hay un mensaje de ÉXITO (del RegistroServlet)

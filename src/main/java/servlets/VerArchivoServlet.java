@@ -7,11 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import utils.AppConfig;
+import utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.SQLException;
 
 import dao.TrabajoDAO;
 import clases.Trabajo;
@@ -37,9 +39,12 @@ public class VerArchivoServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
         // 1. Seguridad: Verificar sesión
+		// Si la sesión no existe, lo enviamos al login
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("idUsuario") == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED); // Error 401
+        if (!Utils.comprobarSesion(session)) {
+        	String mensaje = "La sesión ha caducado";
+        	System.err.print("Error: La sesión ha caducado" + System.lineSeparator());
+        	Utils.enviarError(request, response, mensaje, "errorArchivo.jsp");
             return;
         }
         
@@ -48,8 +53,11 @@ public class VerArchivoServlet extends HttpServlet {
         
         // 2. Obtener ID del trabajo en String
         String idTrabajoStr = request.getParameter("id");
+        
+        // VALIDACIÓN: Si el id del trabajo no existe.
         if (idTrabajoStr == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST); // Error 400
+        	String mensaje = "No se ha podido obtener el ID del pedido";
+        	Utils.enviarError(request, response, mensaje, "errorArchivo.jsp");
             return;
         }
         
@@ -69,8 +77,10 @@ public class VerArchivoServlet extends HttpServlet {
             // Tomamos el nombre con el que fue guardado el archivo.
             String nombreArchivoGuardado = trabajo.getNombreArchivo();
             
+            // VALIDACIÓN: Si el archivo no se encuentra en BBDD o el cliente no tiene permiso.
             if (trabajo == null || nombreArchivoGuardado == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND); // Archivo no encontrado en BBDD
+            	String mensaje = "El archivo solicitado no existe en la base de datos o no tienes permiso para verlo.";
+            	Utils.enviarError(request, response, mensaje, "errorArchivo.jsp");
                 return;
             }
             
@@ -78,8 +88,10 @@ public class VerArchivoServlet extends HttpServlet {
             // Combinamos la constante global + el nombre que vino de la BBDD
             File archivo = new File(AppConfig.DIRECTORIO_ARCHIVOS, nombreArchivoGuardado);
             
+            // VALIDACIÓN: Si el archivo físico no está
             if (!archivo.exists()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND); // Archivo no encontrado en Disco
+            	String mensaje = "El archivo físico no se encuentra en el servidor (Ruta no válida).";
+            	Utils.enviarError(request, response, mensaje, "errorArchivo.jsp");
                 return;
             }
             
@@ -88,7 +100,9 @@ public class VerArchivoServlet extends HttpServlet {
             // Adivinar el tipo MIME (pdf, jpg, png) basado en el nombre
             String mimeType = getServletContext().getMimeType(archivo.getName());
             if (mimeType == null) {
-                mimeType = "application/octet-stream"; // Tipo genérico binario
+            	String mensaje = "El tipo de archivo no es compatible.";
+            	Utils.enviarError(request, response, mensaje, "errorArchivo.jsp");
+                return;
             }
             
             response.setContentType(mimeType);
@@ -114,9 +128,30 @@ public class VerArchivoServlet extends HttpServlet {
                 }
             }
             
-        } catch (Exception e) {
+        } 
+        // VERIFICACIÓN: error con SQL
+        catch (SQLException e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            // VERIFICACIÓN: 
+            if (!response.isCommitted()) {
+                Utils.enviarError(request, response, "Ocurrió un error con SQL.", "errorArchivo.jsp");
+            }
+        }
+        // VERIFICACIÓN: No se encontró el driver JDBC
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            if (!response.isCommitted()) {
+                Utils.enviarError(request, response, "No se pudo encontrar el driver JDBC", "errorArchivo.jsp");
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            // VERIFICACIÓN: Si la respuesta se comprometió (como por ejemplo, que haya ocurrido un error mientras se 
+            // cargaban los archivos), no se envía muestra la pantalla de error al usuario para que no ocurra un segundo error
+            // como IllegalStateException.
+            if (!response.isCommitted()) {
+                Utils.enviarError(request, response, "Error interno del servidor al procesar el archivo.", "errorArchivo.jsp");
+            }
         }
     }
 
@@ -127,5 +162,4 @@ public class VerArchivoServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
-
 }

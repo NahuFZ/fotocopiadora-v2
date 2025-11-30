@@ -115,7 +115,9 @@
                     </form>
                 </td>
                 
-                <%-- ACCIÓN 2: ACTIVAR / DESACTIVAR --%>
+                <%-- ACCIÓN 2: ACTIVAR / DESACTIVAR
+                 	Si el usuario esta habilitado, se muestra el botón de desactivar y se esconde el de activar
+                	Si el usuario esta deshabilitado, se muestra el botón de activar y se esconde el de desactivar --%>
                 <td>
                     <form action="GestionCuentasServlet" method="POST" style="margin:0;">
                         <input type="hidden" name="accion" value="cambiarEstado">
@@ -143,7 +145,7 @@
                     } // Fin for
                 } else {
             %>
-                <tr><td colspan="7">No se encontraron usuarios.</td></tr>
+                <tr><td colspan="8">No se encontraron usuarios.</td></tr>
             <% } %>
         </tbody>
     </table>

@@ -82,7 +82,7 @@ public class UsuarioDAO {
                         return usuario; // <--- ÚNICO CAMINO DE ÉXITO
                     } else {
                         // Usuario existe, password correcto, pero cuenta inactiva
-                        throw new AuthException("Su cuenta está desactivada. Contacte al administrador."); // <--- LANZAMOS ERROR 1
+                        throw new AuthException("Su cuenta está desactivada. Contactese con el administrador."); // <--- LANZAMOS ERROR 1
                     }
                 } else {
                     // El email existe, pero la contraseña es incorrecta

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import utils.Utils;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import dao.TrabajoDAO;
@@ -19,14 +20,16 @@ public class GestionTrabajosServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
     private TrabajoDAO trabajoDAO;
-
+    
+    private static final String JSP = "gestionTrabajos.jsp";
+    
     public GestionTrabajosServlet() {
         super();
         this.trabajoDAO = new TrabajoDAO();
     }
 
     /**
-     * GET: O
+     * GET: Se busca la lista de trabajos de acuerdo a los filtros aplicados.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -56,14 +59,25 @@ public class GestionTrabajosServlet extends HttpServlet {
             
             request.getRequestDispatcher("gestionTrabajos.jsp").forward(request, response);
             
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            e.printStackTrace();
+            String mensaje = "Fallo al conectarse a la base de datos.";
+            Utils.enviarError(request, response, mensaje, JSP);
+        }
+        catch (ClassNotFoundException e) {
+        	e.printStackTrace();
+            String mensaje = "No se encuentra el driver JDBC.";
+            Utils.enviarError(request, response, mensaje, JSP);
+        }
+        catch (Exception e) {
             e.printStackTrace();
             // En caso de error, volvemos al panel principal
-            response.sendRedirect("paginaPrincipalAdmin.jsp");
+            String mensaje = "Fallo interno del servidor.";
+            Utils.enviarError(request, response, mensaje, JSP);
         }
     }
     /**
-     * POST: 
+     * POST: Se cambia el estado del trabajo de "pendiente" a "terminado" y de "terminado" a "entregado".
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -86,8 +100,20 @@ public class GestionTrabajosServlet extends HttpServlet {
                     trabajoDAO.actualizarEstadoTrabajo(idTrabajo, nuevoEstado);
                 }
                 
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 e.printStackTrace();
+                String mensaje = "No se pudo pasar el id del trabajo a Int.";
+                Utils.enviarError(request, response, mensaje, JSP);
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+                String mensaje = "Fallo al conectarse a la base de datos.";
+                Utils.enviarError(request, response, mensaje, JSP);
+            }
+            catch (ClassNotFoundException e) {
+            	e.printStackTrace();
+                String mensaje = "No se encuentra el driver JDBC.";
+                Utils.enviarError(request, response, mensaje, JSP);
             }
         }
         
