@@ -26,46 +26,125 @@
     pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
+
+<!-- CABECERA -->
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Cliente</title>
+    <title>Panel de Cliente - Fotocopiadora</title>
+    <!-- Integramos BOOTSTRAP (CSS) -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
+		rel="stylesheet" integrity ="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Integramos íconos de Bootstrap -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+	   
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .action-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+            height: 100%; /* Para que ambas tarjetas tengan la misma altura */
+        }
+        .action-card:hover {
+            transform: translateY(-5px); /* Efecto de "levantarse" al pasar el mouse */
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+        .card-icon {
+            font-size: 3rem;
+            color: #0d6efd; /* Azul Bootstrap */
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
 
-    <h1>Panel de Cliente</h1>
-    
-    <%-- Saludamos al cliente por su nombre --%>
-    <h3>Bienvenido, <%= nombreCliente %></h3>
-    <p>¿Qué te gustaría hacer?</p>
-    
-    <hr>
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-printer-fill me-2"></i>Fotocopiadora</a>
+            
+            <!-- Botón hamburguesa para móviles -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <span class="text-white">Hola, <strong><%= nombreCliente %></strong></span>
+                    </li>
+                    <li class="nav-item">
+                        <form action="LogoutServlet" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     
     <%-- 
       Para mantener la simplicidad (sin CSS), usamos formularios
       que actúan como "botones" de navegación.
       El 'style' es solo para que los botones queden uno al lado del otro.
     --%>
-    
-    <div style="margin-top: 20px;">
+      <!-- CONTENIDO PRINCIPAL -->
+    <div class="container">
         
-        <!-- Botón 1: Nuevo Pedido (tu "reservar nuevas fotocopias") -->
-        <form action="nuevoPedido.jsp" method="GET" style="display: inline-block;">
-            <button type="submit">Solicitar Nuevas Fotocopias (Nuevo Pedido)</button>
-        </form>
-        
-        <!-- Botón 2: Historial de Pedidos -->
-        <!-- Apunta a HistorialServlet para que la tabla se muestra al apretar el botón -->
-        <form action="HistorialPedidosServlet" method="GET" style="display: inline-block;">
-            <button type="submit">Ver Historial de Pedidos</button>
-        </form>
-        
-        <!-- Botón 3: Cerrar Sesión -->
-        <form action="LogoutServlet" method="POST" style="display: inline-block;">
-            <button type="submit">Cerrar Sesión</button>
-        </form>
-        
-    </div>
+        <div class="text-center mb-5">
+            <h2 class="fw-light">¿Qué te gustaría hacer hoy?</h2>
+        </div>
+
+        <div class="row justify-content-center g-4">
+            
+            <!-- TARJETA 1: NUEVO PEDIDO -->
+            <div class="col-md-5 col-lg-4">
+                <div class="card action-card shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </div>
+                        <h4 class="card-title mb-3">Nuevo Pedido</h4>
+                        <p class="card-text text-muted mb-4">
+                            Sube tus archivos PDF o imágenes, elige la cantidad de copias y cuándo retirarlas.
+                        </p>
+                        <!-- Usamos un formulario GET para mantener la lógica original -->
+                        <form action="nuevoPedido.jsp" method="GET">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Solicitar Ahora
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARJETA 2: HISTORIAL DE PEDIDOS -->
+            <div class="col-md-5 col-lg-4">
+                <div class="card action-card shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <div class="card-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h4 class="card-title mb-3">Mis Pedidos</h4>
+                        <p class="card-text text-muted mb-4">
+                            Revisa el estado de tus trabajos, descarga tus archivos o cancela pedidos pendientes.
+                        </p>
+                        <!-- Usamos un formulario GET apuntando al SERVLET (Corrección que hicimos antes) -->
+                        <form action="HistorialPedidosServlet" method="GET">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Ver Historial
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>  
 
 </body>
 </html>

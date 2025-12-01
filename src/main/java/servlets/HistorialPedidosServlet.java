@@ -74,14 +74,19 @@ public class HistorialPedidosServlet extends HttpServlet {
             // --- 5. Reenviar al JSP ---
             request.getRequestDispatcher("historialPedidos.jsp").forward(request, response);
             
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
+            String mensaje = "Cargar pedidos: Fallo al conectarse a la base de datos.";
             // Si hay un error de BBDD, enviamos al JSP con un mensaje
-            request.setAttribute("errorHistorial", "Error al cargar el historial. Intente más tarde.");
-            request.getRequestDispatcher("historialPedidos.jsp").forward(request, response);
+            Utils.enviarError(request, response, mensaje, "historialPedidos.jsp");
+        }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            String mensaje = "Cargar pedidos: No se encontró el driver JDBC.";
+            // Si hay un error de BBDD, enviamos al JSP con un mensaje
+            Utils.enviarError(request, response, mensaje, "historialPedidos.jsp");
         }
     }
-
     /**
      * Maneja el POST: Borra un trabajo.
      */
@@ -134,9 +139,19 @@ public class HistorialPedidosServlet extends HttpServlet {
                     }
                 }
             } catch (NumberFormatException e) {
-                e.printStackTrace(); // Error si el idTrabajo no es un número
-            } catch (SQLException | ClassNotFoundException e) {
-                e.printStackTrace(); // Error de BBDD
+            	 // Error si el idTrabajo no es un número
+                e.printStackTrace();
+                String mensaje = "Borrar pedido: El id del pedido presenta un formato inválido.";
+                Utils.enviarError(request, response, mensaje, "historialPedidos.jsp");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                String mensaje = "Borrar pedido: Fallo al conectarse a la base de datos.";
+                Utils.enviarError(request, response, mensaje, "historialPedidos.jsp");
+            }
+            catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                String mensaje = "Borrar pedido: No se encontró el driver JDBC.";
+                Utils.enviarError(request, response, mensaje, "historialPedidos.jsp");
             }
         }
         // --- 3. Redirigir de vuelta al GET ---

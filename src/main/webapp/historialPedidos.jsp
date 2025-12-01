@@ -5,28 +5,41 @@
 <%@ page import="utils.Utils" %>
 
 <%-- 
-  BLOQUE DE SEGURIDAD OBLIGATORIO
-  Verifica si el usuario está logueado y si es un 'cliente'.
+    =================================================================
+    SECCIÓN JAVA: Seguridad y Datos
+    =================================================================
 --%>
 <%
-	// 1. Comprueba sesión abierta de cliente
-	if (!Utils.esCliente(request, response)) {
-		return;
-	}
-    // 2. Obtener la sesión actual
-    HttpSession sesion = request.getSession(false);
-    String nombreRol = (String) sesion.getAttribute("nombreRol");
+	// Comprueba sesión abierta de cliente
+// 	if (!Utils.esCliente(request, response)) {
+// 		return;
+// 	}
     
     // --- Si llegamos aquí, es un cliente válido ---
     
-    // 3. Obtener la lista de trabajos (que el HistorialPedidosServlet nos envió)
+    // Preparar mensaje de ERROR
+    String mensajeError = null;
+    
+    Object errorObj = request.getAttribute("error");
+    String errorParam = request.getParameter("error");
+    
+    if (errorObj != null) {
+    	mensajeError = errorObj.toString();
+    }
+    
+    // Obtener la sesión actual, sin crear una nueva si no existe
+    HttpSession sesion = request.getSession(false);
+    // Buscamos el nombre del usuario
+    String nombreCliente = (String) sesion.getAttribute("nombreCompleto");
+    
+    // Obtiene la lista de trabajos (que el HistorialPedidosServlet nos envió)
     List<Trabajo> listaTrabajos = (List<Trabajo>) request.getAttribute("listaTrabajos");
     
-    // 4. Obtener los filtros actuales (para que el <select> los recuerde)
+    // Obtiene los filtros actuales (para que el <select> los recuerde)
     String filtroEstadoActual = (String) request.getAttribute("filtroEstadoActual");
     String ordenActual = (String) request.getAttribute("ordenActual");
     
-    // 5. Preparar el formateador de fechas
+    // Prepara el formateador de fechas
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy");
 %>
@@ -38,173 +51,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Pedidos</title>
+    <title>Historial de Pedidos - Fotocopiadora</title>
+    <!-- Integramos BOOTSTRAP (CSS) -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
+		rel="stylesheet" integrity ="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Integramos íconos de Bootstrap -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     
     <%-- Estilo simple para que la tabla no se vea tan mal --%>
     <style>
-        table { border-collapse: collapse; width: 100%; }
+       	body { background-color: #f8f9fa; }
+        table { 
+        	border-collapse: collapse;
+         	width: 100%;
+         	 }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
     </style>
 </head>
 <body>
-
-    <a href="paginaPrincipalCliente.jsp">&lt;&lt; Volver al Panel Principal</a>
-
-    <h1>Mi Historial de Pedidos</h1>
+	<!-- BARRA DE NAVEGACIÓN -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+		<div class="container">
+			<a class="navbar-brand fw-bold" href="paginaPrincipalCliente.jsp">
+				<!-- Insertamos un icono de flecha hacia la izquierda --> 
+				<i class="bi bi-arrow-left-circle me-2"></i>Volver al Panel
+			</a> <span class="navbar-text text-white"> <strong>Usuario: <%=nombreCliente%></strong>
+			</span>
+		</div>
+	</nav>
     
-    <%-- MOSTRAMOS ERRORES --%>
-    <%
-    // Revisar si hay un mensaje de ERROR
-    Object errorObj = request.getAttribute("error");
-    if (errorObj != null) {
-        String errorMsg = errorObj.toString();
-        // Imprimimos el HTML del error
-        out.print("<p style='color: red; font-weight: bold;'> Error: " + errorMsg + "</p>");
-    } 
-    %>
+    <div class="container">
     
-    <%-- 
-      BLOQUE DE FILTROS
-      Este formulario "recarga" la página (enviando a HistorialPedidosServlet GET)
-      con los nuevos parámetros de filtro.
-    --%>
-    <form action="HistorialPedidosServlet" method="GET">
-        <label for="filtroEstado">Filtrar por estado:</label>
-        <select id="filtroEstado" name="filtroEstado">
-            <option value="todos" <%-- Se usa 'selected' para recordar el filtro --%>
-                <%= "todos".equals(filtroEstadoActual) ? "selected" : "" %>>Todos</option>
-            <option value="pendiente" 
-                <%= "pendiente".equals(filtroEstadoActual) ? "selected" : "" %>>Pendiente</option>
-            <option value="terminado" 
-                <%= "terminado".equals(filtroEstadoActual) ? "selected" : "" %>>Terminado</option>
-            <option value="retirado" 
-                <%= "retirado".equals(filtroEstadoActual) ? "selected" : "" %>>Retirado</option>
-        </select>
-        
-        <label for="orden">Ordenar por:</label>
-        <select id="orden" name="orden">
-            <option value="fecha_sol_desc" 
-                <%= "fecha_sol_desc".equals(ordenActual) ? "selected" : "" %>>Solicitud (Más nuevo)</option>
-            <option value="fecha_sol_asc" 
-                <%= "fecha_sol_asc".equals(ordenActual) ? "selected" : "" %>>Solicitud (Más antiguo)</option>
-            <option value="fecha_retiro_desc" 
-                <%= "fecha_retiro_desc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más nuevo)</option>
-            <option value="fecha_retiro_asc" 
-                <%= "fecha_retiro_asc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más antiguo)</option>
-        </select>
-        
-        <button type="submit">Aplicar Filtros</button>
-    </form>
-    
-    <hr>
-    
-    <%-- 
-      BLOQUE DE TABLA DE DATOS
-    --%>
-    
-    <%
-        // Mensaje de error (si el Servlet tuvo problemas)
-        Object errorHistorial = request.getAttribute("errorHistorial");
-        if (errorHistorial != null) {
-            out.print("<p style='color:red;'>" + errorHistorial.toString() + "</p>");
-        }
-        
-        // Mensaje si no hay trabajos
-        if (listaTrabajos == null || listaTrabajos.isEmpty()) {
-            out.print("<p>Aún no has realizado ningún pedido.</p>");
-        } else {
-            // Si hay trabajos, dibujamos la tabla
-    %>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Estado</th>
-                <th>Archivo</th>
-                <th>Copias</th>
-                <th>Calidad</th>
-                <th>Faz</th>
-                <th>Fecha Solicitud</th>
-                <th>Fecha Retiro</th>
-                <th>Fecha Impresión</th>
-                <th>Fecha Entrega</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            <%-- Iteramos sobre la lista de trabajos --%>
-            <% 
-                for (Trabajo trabajo : listaTrabajos) { 
-            %>
-            <tr>
-                <td><%= trabajo.getEstado() %></td>
-                <%-- Columna de Archivo con enlace de previsualización --%>
-                <td>
-                    <!-- 
-                         El enlace apunta al VerArchivoServlet con el ID del trabajo.
-                         target="_blank" abre una nueva pestaña.
-                    -->
-                    <a href="VerArchivoServlet?id=<%= trabajo.getIdTrabajo() %>" target="_blank" style="text-decoration: none; color: blue;">
-                        📄 <%= trabajo.getNombreArchivoOriginal() %>
-                    </a>
-                </td>
-                <%-- ============================================= --%>
+    	<div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary fw-light"><i class="bi bi-clock-history me-2"></i>Mis Pedidos</h2>
+        </div>
+        <!-- TARJETA DE FILTROS -->
+        <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-white">
+            <form action="HistorialPedidosServlet" method="GET" class="row g-3 align-items-end">
                 
-                <td><%= trabajo.getNumCopias() %></td>
-                <%-- Se agrega este bloque para que blanco y negro no se vea con guiones bajos --%>
-                <td>
-                    <%
-                        String calidad = trabajo.getCalidad();
-                        if ("blanco_y_negro".equals(calidad)) {
-                            out.print("Blanco y Negro");
-                        } else if ("color".equals(calidad)) {
-                            out.print("Color"); // Lo capitalizamos también
-                        } else {
-                            out.print(calidad); // Por si acaso
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted">Filtrar Estado</label>
+                    <select class="form-select" name="filtroEstado">
+                        <option value="todos" <%= "todos".equals(filtroEstadoActual) ? "selected" : "" %>>Todos</option>
+                        <option value="pendiente" <%= "pendiente".equals(filtroEstadoActual) ? "selected" : "" %>>Pendiente</option>
+                        <option value="terminado" <%= "terminado".equals(filtroEstadoActual) ? "selected" : "" %>>Terminado</option>
+                        <option value="retirado" <%= "retirado".equals(filtroEstadoActual) ? "selected" : "" %>>Retirado</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted">Ordenar</label>
+                    <select class="form-select" name="orden">
+                        <option value="fecha_sol_desc" <%= "fecha_sol_desc".equals(ordenActual) ? "selected" : "" %>>Solicitud (Más nuevo)</option>
+                        <option value="fecha_sol_asc" <%= "fecha_sol_asc".equals(ordenActual) ? "selected" : "" %>>Solicitud (Más antiguo)</option>
+                        <option value="fecha_retiro_desc" <%= "fecha_retiro_desc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más nuevo)</option>
+                        <option value="fecha_retiro_asc" <%= "fecha_retiro_asc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más antiguo)</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-funnel-fill me-1"></i>Aplicar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+        </div>
+        <!-- TARJETA PRINCIPAL -->
+        <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+        	<%-- MOSTRAMOS ERRORES --%>
+		    <% if (mensajeError != null) { %>
+			        <div class="alert alert-danger text-center" role="alert">
+			            <%= mensajeError %>
+			        </div>
+            <%
+               }
+               // Verificamos que existan trabajos.
+               if (listaTrabajos == null || listaTrabajos.isEmpty()) {
+            %>
+             	 <%-- No existen trabajos --%>
+                 <div class="text-center py-5">
+                     <i class="bi bi-inbox fs-1 text-muted"></i>
+                     <p class="mt-3 text-muted">No se encontraron pedidos con estos filtros.</p>
+                 </div>
+			<%
+			   } else {
+			%>
+			<%-- COMIENZO DE LA TABLA --%>
+            <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Estado</th>
+                        <th>Archivo</th>
+                        <th>Detalles</th>
+                        <th>Solicitud / Retiro</th>
+                        <th>Impresión</th> <!-- NUEVA COLUMNA -->
+                        <th>Entrega</th>   <!-- NUEVA COLUMNA -->
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (Trabajo t : listaTrabajos) { 
+                        String badgeClass = "bg-secondary";
+                        
+                        if ("pendiente".equals(t.getEstado())) {
+                            badgeClass = "bg-warning text-dark";
+                        } else if ("terminado".equals(t.getEstado())) {
+                            badgeClass = "bg-success";
+                        } else if ("retirado".equals(t.getEstado())) {
+                            badgeClass = "bg-secondary";
                         }
                     %>
-                </td>
-                <td><%= trabajo.getFaz() %></td>
-                
-                <%-- Formateamos las fechas para que sean legibles --%>
-                <td><%= sdf.format(trabajo.getFechaSolicitud()) %></td>
-                <td><%= sdfFecha.format(trabajo.getFechaRetiroSolicitada()) %></td>
-                
-                <%-- Manejamos fechas que pueden ser NULAS --%>
-                <td><%= (trabajo.getFechaImpresion() != null) ? sdf.format(trabajo.getFechaImpresion()) : "N/A" %></td>
-                <td><%= (trabajo.getFechaEntrega() != null) ? sdf.format(trabajo.getFechaEntrega()) : "N/A" %></td>
-                
-                <td>
-                    <%-- 
-                      BOTÓN DE BORRAR
-                      Solo aparece si el estado es "pendiente".
-                    --%>
-                    <%
-                        if ("pendiente".equals(trabajo.getEstado())) {
-                    %>
-                    <%-- Este es un mini-formulario que envía por POST al HistorialPedidosServlet --%>
-                    <form action="HistorialPedidosServlet" method="POST" style="margin: 0;">
-                        <input type="hidden" name="action" value="borrar">
-                        <input type="hidden" name="idTrabajo" value="<%= trabajo.getIdTrabajo() %>">
-                        <button type="submit">Borrar</button>
-                    </form>
-                    <%
-                        } else {
-                            out.print("N/A");
-                        }
-                    %>
-                </td>
-            </tr>
-            <% 
-                } // Fin del bucle for
-            %>
-        </tbody>
-    </table>
-    
-    <%
-        } // Fin del else (lista no está vacía)
-    %>
-
+                    <tr>
+                        <!-- ESTADO -->
+                        <td class="text-center">
+                            <span class="badge rounded-pill <%= badgeClass %>">
+                                <%= t.getEstado().toUpperCase() %>
+                            </span>
+                        </td>
+                        
+                        <!-- ARCHIVO -->
+                        <td>
+                            <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>" target="_blank" class="text-decoration-none fw-bold">
+                                <i class="bi bi-file-earmark-text me-1"></i><%= t.getNombreArchivoOriginal() %>
+                            </a>
+                        </td>
+                        
+                        <!-- DETALLES -->
+                        <td>
+                            <small class="text-muted d-block">
+                                <strong><%= t.getNumCopias() %></strong> copias
+                            </small>
+                            <small class="text-muted">
+                                <%= "color".equals(t.getCalidad()) ? "Color" : "Blanco y negro" %> • 
+                                <%= "doble".equals(t.getFaz()) ? "Doble" : "Simple" %>
+                            </small>
+                        </td>
+                        
+                        <!-- FECHAS BÁSICAS -->
+                        <td>
+                            <div class="small text-muted">Sol: <%= sdf.format(t.getFechaSolicitud()) %></div>
+                            <div class="small fw-bold text-dark">
+                                <i class="bi bi-calendar-event me-1"></i>Ret: <%= sdfFecha.format(t.getFechaRetiroSolicitada()) %>
+                            </div>
+                        </td>
+                        
+                        <!-- FECHA IMPRESIÓN (NUEVA) -->
+                        <td>
+                            <small class="text-muted">
+                                <%= (t.getFechaImpresion() != null) ? sdf.format(t.getFechaImpresion()) : "-" %>
+                            </small>
+                        </td>
+                        
+                        <!-- FECHA ENTREGA (NUEVA) -->
+                        <td>
+                            <small class="text-muted">
+                                <%= (t.getFechaEntrega() != null) ? sdf.format(t.getFechaEntrega()) : "-" %>
+                            </small>
+                        </td>
+                        
+                        <!-- ACCIONES -->
+                        <td class="text-end pe-4">
+                            <% if ("pendiente".equals(t.getEstado())) { %>
+                                <form action="HistorialPedidosServlet" method="POST" onsubmit="return confirm('¿Seguro que deseas cancelar este pedido?');">
+                                    <input type="hidden" name="action" value="borrar">
+                                    <input type="hidden" name="idTrabajo" value="<%= t.getIdTrabajo() %>">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm table-action-btn" title="Cancelar Pedido">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            <% } else { %>
+                                <span class="text-muted small">-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <%-- Fin del for (Trabajo t : listaTrabajos) --%>
+                    <% } %>
+                </tbody>
+            </table>
+            </div>
+			<%-- Fin del if (listaTrabajos == null || listaTrabajos.isEmpty()) --%>
+            <% } %>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -29,8 +29,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Cliente - Fotocopiadora</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Integramos BOOTSTRAP (CSS) -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
+		rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     
     <style>
         body {
@@ -91,7 +92,7 @@
 			            <label for="password">Contraseña:</label><br>
 			            <input type="password" class="form-control" id="password" name="password" 
 			            	placeholder="Ingrese su contraseña" required>
-			        	<div id="passwordInfo" class="form-text">
+			        	<div class="form-text">
 						La contraseña debe tener como minimo 8 caracteres.
 						</div>
 			        </div>
