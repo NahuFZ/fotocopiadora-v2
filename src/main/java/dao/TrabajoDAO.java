@@ -89,7 +89,7 @@ public class TrabajoDAO {
             sql.append(" AND estado = ? ");
         }
 
-        // Añadir ordenamiento (con validación para evitar SQL Injection)
+        // Ordenamiento de los trabajos (con validación para evitar SQL Injection)
         // Por defecto, ordenamos por fecha de solicitud más nueva.
         String orderBySql = " ORDER BY fecha_solicitud DESC";
         switch (orden) {
@@ -327,14 +327,20 @@ public class TrabajoDAO {
             sql.append(" AND t.estado = ? ");
         }
 
-        // Ordenamiento
-        String orderBy = " ORDER BY t.fecha_solicitud DESC"; // Por defecto: lo más nuevo primero
-        if ("antiguo".equals(orden)) {
-            orderBy = " ORDER BY t.fecha_solicitud ASC";
-        } else if ("retiro_urgente".equals(orden)) {
-            orderBy = " ORDER BY t.fecha_retiro_solicitada ASC";
+        // Ordenamiento de los trabajos (con validación para evitar SQL Injection)
+        String orderBySQL = " ORDER BY t.fecha_solicitud DESC"; // Por defecto: lo más nuevo primero
+        switch (orden) {
+        case "fecha_sol_asc":
+        	orderBySQL = " ORDER BY fecha_solicitud ASC";
+            break;
+        case "fecha_retiro_desc":
+        	orderBySQL = " ORDER BY fecha_retiro_solicitada DESC";
+            break;
+        case "fecha_retiro_asc":
+        	orderBySQL = " ORDER BY fecha_retiro_solicitada ASC";
+            break;
         }
-        sql.append(orderBy);
+        sql.append(orderBySQL);
 
         Connection conn = null;
         PreparedStatement ps = null;

@@ -92,15 +92,15 @@
 			    <form action="LoginServlet" method="POST">
 			        <%-- mb-3: margin-bottom tamaño 3 ($spacer) --%>
 			        <div class="mb-3">
-			            <label for="email" class="form-label">Email:</label><br>
+			            <label for="email" class="form-label">Email:</label>
 			            <input type="email" class="form-control" id="email" name="email" placeholder="nombre@ejemplo.com" required>
 			        </div>
-			        <br>
+			        
 			        <div class="mb-4">
-			            <label for="password" class="form-label">Contraseña:</label><br>
+			            <label for="password" class="form-label">Contraseña:</label>
 			            <input type="password" class="form-control" id="password" name="password" placeholder="Tu contraseña" required>
 			        </div>
-			        <br>
+			        
 			        <div class="d-grid">
 			            <button type="submit" class="btn btn-primary btn-lg">Ingresar</button>
 			        </div>
@@ -109,7 +109,7 @@
 			
 		    <!-- Pie de tarjeta -->
            	<div class="card-footer text-center py-3 bg-white border-top-0">
-                <small class="text-muted">¿No tienes cuenta?</small><br>
+                <small class="text-muted">¿No tienes cuenta?</small>
                 <a href="registro.jsp" class="fw-bold text-decoration-none">Regístrate aquí</a>
            	</div>
 		</div>

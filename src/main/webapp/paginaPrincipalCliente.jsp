@@ -14,8 +14,6 @@
     // 2. Obtener la sesión actual, sin crear una nueva si no existe
     HttpSession sesion = request.getSession(false);
     String nombreRol = (String) sesion.getAttribute("nombreRol");
-
- 	
     
     // Si llegamos aquí, el usuario es un CLIENTE validado.
     // Obtenemos su nombre para saludarlo.
@@ -63,26 +61,18 @@
     <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-5">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-printer-fill me-2"></i>Fotocopiadora</a>
+        	<%-- Lado izquierdo: pequeño logo --%>
+            <a class="navbar-brand fw-bold"><i class="bi bi-printer-fill me-2"></i>Fotocopiadora</a>
             
-            <!-- Botón hamburguesa para móviles -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item me-3">
-                        <span class="text-white">Hola, <strong><%= nombreCliente %></strong></span>
-                    </li>
-                    <li class="nav-item">
-                        <form action="LogoutServlet" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-outline-light btn-sm">
-                                <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+            <%-- Lado derecho: Nombre del usuario y cerrar sesión --%>
+            <div class="navbar-text">
+	            <span class="text-white mx-3">¡Hola, <strong><%= nombreCliente %></strong>!</span>
+	            <%-- Botón para cerrar sesión --%>
+	            <form action="LogoutServlet" method="POST" class="d-inline">
+	                <button type="submit" class="btn btn-outline-light btn-sm">
+	                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+	                </button>
+	            </form>
             </div>
         </div>
     </nav>

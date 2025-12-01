@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import utils.Utils;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import dao.RolDAO;
@@ -25,7 +26,9 @@ public class GestionCuentasServlet extends HttpServlet {
     
     private UsuarioDAO usuarioDAO;
     private RolDAO rolDAO;
-
+    
+    private static final String JSP = "gestionUsuarios.jsp";
+    
     public GestionCuentasServlet() {
         super();
         this.usuarioDAO = new UsuarioDAO();
@@ -53,10 +56,21 @@ public class GestionCuentasServlet extends HttpServlet {
             
             request.getRequestDispatcher("gestionCuentas.jsp").forward(request, response);
             
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            // En una app real, mostraríamos un error mejor
-            response.sendRedirect("paginaPrincipalAdmin.jsp");
+            String mensaje = "Fallo al conectarse a la base de datos.";
+            Utils.enviarError(request, response, mensaje, JSP);
+        }
+        catch (ClassNotFoundException e) {
+        	e.printStackTrace();
+            String mensaje = "No se encuentra el driver JDBC.";
+            Utils.enviarError(request, response, mensaje, JSP);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            // En caso de error, volvemos al panel principal
+            String mensaje = "Fallo interno del servidor.";
+            Utils.enviarError(request, response, mensaje, JSP);
         }
     }
 
@@ -94,8 +108,21 @@ public class GestionCuentasServlet extends HttpServlet {
                 usuarioDAO.cambiarEstadoCuenta(idUsuario, nuevoEstado);
             }
             
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
+            String mensaje = "Fallo al conectarse a la base de datos.";
+            Utils.enviarError(request, response, mensaje, JSP);
+        }
+        catch (ClassNotFoundException e) {
+        	e.printStackTrace();
+            String mensaje = "No se encuentra el driver JDBC.";
+            Utils.enviarError(request, response, mensaje, JSP);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            // En caso de error, volvemos al panel principal
+            String mensaje = "Fallo interno del servidor.";
+            Utils.enviarError(request, response, mensaje, JSP);
         }
         
         // 3. Redirigir al GET para ver los cambios

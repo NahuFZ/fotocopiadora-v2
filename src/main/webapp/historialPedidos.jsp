@@ -17,7 +17,7 @@
     
     // --- Si llegamos aquí, es un cliente válido ---
     
-    // Preparar mensaje de ERROR
+    // Recibir mensaje de ERROR
     String mensajeError = null;
     
     Object errorObj = request.getAttribute("error");
@@ -26,6 +26,8 @@
     if (errorObj != null) {
     	mensajeError = errorObj.toString();
     }
+    // Recibir mensaje de borrado
+    String borradoParam = request.getParameter("borrado");
     
     // Obtener la sesión actual, sin crear una nueva si no existe
     HttpSession sesion = request.getSession(false);
@@ -61,23 +63,29 @@
     <%-- Estilo simple para que la tabla no se vea tan mal --%>
     <style>
        	body { background-color: #f8f9fa; }
-        table { 
-        	border-collapse: collapse;
-         	width: 100%;
-         	 }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        .table-action-btn { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        /* Ajustamos un poco la fuente de la tabla para que entren más columnas */
+        table { font-size: 0.9rem; }
     </style>
 </head>
 <body>
 	<!-- BARRA DE NAVEGACIÓN -->
 	<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
 		<div class="container">
+			<%-- Lado izquierdo: pequeño logo --%>
 			<a class="navbar-brand fw-bold" href="paginaPrincipalCliente.jsp">
 				<!-- Insertamos un icono de flecha hacia la izquierda --> 
 				<i class="bi bi-arrow-left-circle me-2"></i>Volver al Panel
-			</a> <span class="navbar-text text-white"> <strong>Usuario: <%=nombreCliente%></strong>
-			</span>
+			</a>
+			<%-- Lado derecho: Nombre del usuario y cerrar sesión --%>
+			<div>
+				<span class="navbar-text text-white mx-3"> <strong>Usuario: <%=nombreCliente%></strong></span>
+				<form action="LogoutServlet" method="POST" class="d-inline">
+	                <button type="submit" class="btn btn-outline-light btn-sm">
+	                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+	                </button>
+		        </form>
+	        </div>
 		</div>
 	</nav>
     
@@ -102,12 +110,12 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold small text-muted">Ordenar</label>
+                    <label class="form-label fw-bold small text-muted">Ordenar por</label>
                     <select class="form-select" name="orden">
                         <option value="fecha_sol_desc" <%= "fecha_sol_desc".equals(ordenActual) ? "selected" : "" %>>Solicitud (Más nuevo)</option>
                         <option value="fecha_sol_asc" <%= "fecha_sol_asc".equals(ordenActual) ? "selected" : "" %>>Solicitud (Más antiguo)</option>
-                        <option value="fecha_retiro_desc" <%= "fecha_retiro_desc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más nuevo)</option>
-                        <option value="fecha_retiro_asc" <%= "fecha_retiro_asc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más antiguo)</option>
+                        <option value="fecha_retiro_asc" <%= "fecha_retiro_asc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más reciente)</option>
+                        <option value="fecha_retiro_desc" <%= "fecha_retiro_desc".equals(ordenActual) ? "selected" : "" %>>Retiro (Más lejano)</option>
                     </select>
                 </div>
                 
@@ -123,12 +131,18 @@
         <div class="card shadow-sm border-0">
         <div class="card-body p-0">
         	<%-- MOSTRAMOS ERRORES --%>
-		    <% if (mensajeError != null) { %>
+		    <%  if (mensajeError != null) { %>
 			        <div class="alert alert-danger text-center" role="alert">
 			            <%= mensajeError %>
 			        </div>
             <%
-               }
+                }
+		    	if ("true".equals(borradoParam)) { %>
+	               <div class="alert alert-success d-flex align-items-center">
+		               <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+		               <div><strong>¡Pedido borrado exitoamente!</strong></div>
+           		   </div>
+       		<% }
                // Verificamos que existan trabajos.
                if (listaTrabajos == null || listaTrabajos.isEmpty()) {
             %>
@@ -217,7 +231,9 @@
                         <!-- ACCIONES -->
                         <td class="text-end pe-4">
                             <% if ("pendiente".equals(t.getEstado())) { %>
-                                <form action="HistorialPedidosServlet" method="POST" onsubmit="return confirm('¿Seguro que deseas cancelar este pedido?');">
+                            	<%-- Con "onsubmit" mostramos un mensaje de confirmación antes de continuar --%>
+                                <form action="HistorialPedidosServlet" method="POST" 
+                                onsubmit="return confirm('¿Seguro que deseas cancelar este pedido? Esta acción no se puede deshacer');">
                                     <input type="hidden" name="action" value="borrar">
                                     <input type="hidden" name="idTrabajo" value="<%= t.getIdTrabajo() %>">
                                     <button type="submit" class="btn btn-outline-danger btn-sm table-action-btn" title="Cancelar Pedido">

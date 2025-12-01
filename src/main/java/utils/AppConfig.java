@@ -12,7 +12,7 @@ public class AppConfig {
     private static final String APP_FOLDER_NAME = "archivos-fotocopiadora";
     
     // Construimos la ruta completa de forma dinámica.
-    // File.separator pone "\" en Windows y "/" en Linux automáticamente.
+    // File.separator pone "\" en Windows y "/" en Linux o Mac automáticamente.
     public static final String DIRECTORIO_ARCHIVOS = USER_HOME + File.separator + APP_FOLDER_NAME;
     
     // Bloque estático para asegurar que la carpeta exista al arrancar la app

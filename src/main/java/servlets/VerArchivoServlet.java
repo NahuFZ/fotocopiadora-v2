@@ -134,7 +134,7 @@ public class VerArchivoServlet extends HttpServlet {
             e.printStackTrace();
             // VERIFICACIÓN: 
             if (!response.isCommitted()) {
-                Utils.enviarError(request, response, "Ocurrió un error con SQL.", "errorArchivo.jsp");
+                Utils.enviarError(request, response, "Error al conectar a la base de datos.", "errorArchivo.jsp");
             }
         }
         // VERIFICACIÓN: No se encontró el driver JDBC

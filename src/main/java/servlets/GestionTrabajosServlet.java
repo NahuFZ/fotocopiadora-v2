@@ -46,7 +46,7 @@ public class GestionTrabajosServlet extends HttpServlet {
         
         // Valores por defecto
         if (filtroEstado == null) filtroEstado = "todos";
-        if (orden == null) orden = "nuevo"; // fecha solicitud desc
+        if (orden == null) orden = "fecha_sol_desc"; // Valor por defecto
 
         try {
             // 3. Obtener lista del DAO

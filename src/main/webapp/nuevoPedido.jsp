@@ -68,11 +68,20 @@ body {
 	<!-- BARRA DE NAVEGACIÓN -->
 	<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
 		<div class="container">
+			<%-- Lado izquierdo: pequeño logo --%>
 			<a class="navbar-brand fw-bold" href="paginaPrincipalCliente.jsp">
 				<!-- Insertamos un icono de flecha hacia la izquierda --> 
 				<i class="bi bi-arrow-left-circle me-2"></i>Volver al Panel
-			</a> <span class="navbar-text text-white"> <strong>Usuario: <%=nombreCliente%></strong>
-			</span>
+			</a>
+			<%-- Lado derecho: Nombre del usuario y cerrar sesión --%>
+			<div>
+				<span class="navbar-text text-white mx-3"> <strong>Usuario: <%=nombreCliente%></strong></span>
+				<form action="LogoutServlet" method="POST" class="d-inline">
+	                <button type="submit" class="btn btn-outline-light btn-sm">
+	                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+	                </button>
+		        </form>
+	        </div>
 		</div>
 	</nav>
 
@@ -100,7 +109,7 @@ body {
                 <% if ("true".equals(exitoParam)) { %>
                     <div class="alert alert-success d-flex align-items-center">
                         <i class="bi bi-check-circle-fill fs-4 me-3"></i>
-                        <div><strong>¡Pedido enviado!</strong> Ver en <a href="HistorialServlet" class="alert-link">historial</a>.</div>
+                        <div><strong>¡Pedido enviado!</strong> Ver en <a href="HistorialPedidosServlet" class="alert-link">historial</a>.</div>
                     </div>
                 <% } %>
 				
