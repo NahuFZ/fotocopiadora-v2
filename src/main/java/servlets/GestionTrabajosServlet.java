@@ -23,7 +23,7 @@ public class GestionTrabajosServlet extends HttpServlet {
 
     private TrabajoDAO trabajoDAO;
     
-    private static final String JSP = "gestionTrabajos.jsp";
+    private static final String JSP = "gestionTrabajosServlet";
     
     public GestionTrabajosServlet() {
         super();
@@ -36,6 +36,7 @@ public class GestionTrabajosServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+    	String modError = "Tabla trabajos: "; // Identifica al módulo para el mensaje de error.
         
     	// 1. Seguridad: Comprueba sesión abierta por un administrador.
     	if (!Utils.esAdmin(request, response)) {
@@ -63,23 +64,23 @@ public class GestionTrabajosServlet extends HttpServlet {
             
         } catch (SQLException e) {
             e.printStackTrace();
-            String mensaje = "Fallo al conectarse a la base de datos.";
+            String mensaje = modError + "Fallo al conectarse a la base de datos.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         catch (ClassNotFoundException e) {
         	e.printStackTrace();
-            String mensaje = "No se encuentra el driver JDBC.";
+            String mensaje = modError + "No se encuentra el driver JDBC.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         catch (Exception e) {
             e.printStackTrace();
             // En caso de error, volvemos al panel principal
-            String mensaje = "Fallo interno del servidor.";
+            String mensaje = modError + "Fallo interno del servidor.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
     }
     /**
-     * POST: Se cambia el estado del trabajo de "pendiente" a "terminado" y de "terminado" a "entregado".
+     * POST: se actualiza o se revierte el estado de los trabajos.
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -91,37 +92,72 @@ public class GestionTrabajosServlet extends HttpServlet {
     	}
         
         String accion = request.getParameter("accion");
-        // --- RECUPERAR LOS FILTROS OCULTOS ---
+        // --- RECUPERAR EL FILTRO Y ORDEN QUE ELIGIÓ EL USUARIO ---
         String filtroEstado = request.getParameter("filtroEstadoActual");
         String orden = request.getParameter("ordenActual");
+        String nuevoEstado = request.getParameter("nuevoEstado");
         
+        // Recuperamos el trabajo.
+        int idTrabajo;
+        try {
+        	idTrabajo = Integer.parseInt(request.getParameter("idTrabajo"));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            String mensaje = "No se pudo pasar el id del trabajo a Int.";
+            Utils.enviarError(request, response, mensaje, JSP);
+            return;
+        }
+        
+        // OPCIÓN 2: ACTUALIZAR ESTADO
+        // Cambio de estado del trabajo de "pendiente" a "terminado" o de "terminado" a "retirado"
         if ("cambiarEstado".equals(accion)) {
+        	String modError = "Actualizar trabajo: "; // Identifica al módulo para el mensaje de error.
             try {
-                int idTrabajo = Integer.parseInt(request.getParameter("idTrabajo"));
-                String nuevoEstado = request.getParameter("nuevoEstado");
-                
-                // Validamos que el estado sea válido
-                if ("pendiente".equals(nuevoEstado) || "terminado".equals(nuevoEstado) || "retirado".equals(nuevoEstado)) {
-                    trabajoDAO.actualizarEstadoTrabajo(idTrabajo, nuevoEstado);
+                // Validamos que el estado coincida con las opciones disponibles
+                if ("terminado".equals(nuevoEstado) || "retirado".equals(nuevoEstado)) {
+                	// realizamos el cambio y comprobamos que se haya realizado 
+                    if (!trabajoDAO.actualizarEstadoTrabajo(idTrabajo, nuevoEstado)){
+                    	String mensaje = "Fallo al cambiar el estado.";
+                        Utils.enviarError(request, response, mensaje, JSP);
+                    }
                 }
-                
-            } catch (NumberFormatException e) {
+            } catch (SQLException e) {
                 e.printStackTrace();
-                String mensaje = "No se pudo pasar el id del trabajo a Int.";
-                Utils.enviarError(request, response, mensaje, JSP);
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-                String mensaje = "Fallo al conectarse a la base de datos.";
+                String mensaje = modError + "Fallo al conectarse a la base de datos.";
                 Utils.enviarError(request, response, mensaje, JSP);
             }
             catch (ClassNotFoundException e) {
             	e.printStackTrace();
-                String mensaje = "No se encuentra el driver JDBC.";
+                String mensaje = modError + "No se encuentra el driver JDBC.";
                 Utils.enviarError(request, response, mensaje, JSP);
             }
         }
         
+        // OPCIÓN 2: REVERTIR ESTADO
+        // Cambio de estado del trabajo de "pendiente" a "terminado" o de "terminado" a "retirado"
+        else if ("revertirEstado".equals(accion)){
+        	String modError = "Revertir trabajo: "; // Identifica al módulo para el mensaje de error.
+        	try {
+                // Validamos que el estado coincida con las opciones disponibles
+                if ("pendiente".equals(nuevoEstado) || "terminado".equals(nuevoEstado)) {
+                	// realizamos el cambio y comprobamos que se haya realizado 
+                    if (!trabajoDAO.revertirEstadoTrabajo(idTrabajo, nuevoEstado)){
+                    	String mensaje = "Fallo al cambiar el estado.";
+                        Utils.enviarError(request, response, mensaje, JSP);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                String mensaje = modError + "Fallo al conectarse a la base de datos.";
+                Utils.enviarError(request, response, mensaje, JSP);
+            }
+            catch (ClassNotFoundException e) {
+            	e.printStackTrace();
+                String mensaje = modError + "No se encuentra el driver JDBC.";
+                Utils.enviarError(request, response, mensaje, JSP);
+            }
+        }
+        // CAMINO CORRECTO
         // Construimos la URL para volver al GET con los mismos parámetros.
         // Usamos URLEncoder para evitar problemas con espacios o caracteres raros.
         String redirectURL = "GestionTrabajosServlet?filtroEstado=" + 

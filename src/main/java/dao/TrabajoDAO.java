@@ -234,6 +234,11 @@ public class TrabajoDAO {
     /**
      * Obtiene un trabajo específico por su ID y el ID del cliente (por seguridad).
      * El trabajo incluye el nombre con el que fue guardado el archivo y el nombre que le puso el usuario.
+     * @param idTrabajo El ID del trabajo para obtener sus datos de archivo.
+     * @param idCliente El ID del cliente (para seguridad).
+     * @return Objeto Trabajo SOLO CON el nombre del archivo original y el nombre del archivo en el servidor.
+     * @throws SQLException
+     * @throws ClassNotFoundException
      */
     public Trabajo getDatosArchivo(int idTrabajo, int idCliente) throws SQLException, ClassNotFoundException {
         
@@ -272,6 +277,10 @@ public class TrabajoDAO {
     /**
      * Obtiene datos del archivo sin validar el idCliente.
      * ¡SOLO PARA USO DE ADMINISTRADORES!
+     * @param idTrabajo El ID del trabajo para obtener sus datos de archivo.
+     * @return Objeto Trabajo SOLO CON el nombre del archivo original y el nombre del archivo en el servidor.
+     * @throws SQLException
+     * @throws ClassNotFoundException
      */
     public Trabajo getDatosArchivoAdmin(int idTrabajo) throws SQLException, ClassNotFoundException {
         
@@ -310,6 +319,11 @@ public class TrabajoDAO {
     /**
      * Obtiene TODOS los trabajos de TODOS los clientes.
      * Incluye datos del cliente (nombre, email) mediante JOIN.
+     * @param filtroEstado para que SQL filtre los trabajos de acuerdo a su estado.
+     * @param orden para que SQL ordene los trabajos cronológicamente ya sea por su fecha de solicitud o de retiro.
+     * @return Lista Trabajos.
+     * @throws SQLException
+     * @throws ClassNotFoundException
      */
     public List<Trabajo> getAllTrabajos(String filtroEstado, String orden) throws SQLException, ClassNotFoundException {
         
@@ -391,6 +405,11 @@ public class TrabajoDAO {
 
     /**
      * Actualiza el estado de un trabajo y establece la fecha correspondiente.
+     * @param idTrabajo para que encuentre el trabajo en la BBDD.
+     * @param nuevoEstado que determina el nuevo estado del trabajo.
+     * @return true si se realizó el cambio o false si no se modificó la BBDD.
+     * @throws SQLException
+     * @throws ClassNotFoundException
      */
     public boolean actualizarEstadoTrabajo(int idTrabajo, String nuevoEstado) throws SQLException, ClassNotFoundException {
         
@@ -416,6 +435,8 @@ public class TrabajoDAO {
             ps.setString(1, nuevoEstado);
             ps.setInt(2, idTrabajo);
             
+            // Este método cuenta el número de filas que fueron modificadas.
+            // Por esto, si se modificó una fila, devuelve true. Si modificó cero filas, devuelve false.
             return ps.executeUpdate() > 0;
             
         } catch (SQLException | ClassNotFoundException e) {
@@ -425,7 +446,48 @@ public class TrabajoDAO {
             DBConnection.close(conn, ps);
         }
     }
-    // Aquí, en el futuro, irán otros métodos como:
-    // public List<Trabajo> getAllTrabajos() { ... }
-    // public boolean cambiarEstado(int idTrabajo, String nuevoEstado) { ... }
+    /**
+     * Revierte el estado de un trabajo y borra la fecha establecida en actualizarEstadoTrabajo.
+     * Sirve en caso que el administrador haya cambiado el estado de un trabajo por error.
+     * @param idTrabajo para que encuentre el trabajo en la BBDD.
+     * @param nuevoEstado que determina el nuevo estado del trabajo.
+     * @return true si se realizó el cambio o false si no se modificó la BBDD.
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    public boolean revertirEstadoTrabajo(int idTrabajo, String nuevoEstado) throws SQLException, ClassNotFoundException {
+        
+        StringBuilder sql = new StringBuilder("UPDATE trabajos SET estado = ? ");
+        
+        // Si pasa a 'pendiente', eliminamos la fecha de impresión y entrega
+        if ("pendiente".equals(nuevoEstado)) {
+            sql.append(", fecha_impresion = NULL, fecha_entrega = NULL ");
+        }
+        // Si pasa a 'terminado', eliminamos la fecha de entrega
+        else if ("terminado".equals(nuevoEstado)) {
+            sql.append(", fecha_entrega = NULL ");
+        }
+        
+        sql.append("WHERE idTrabajo = ?");
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql.toString());
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idTrabajo);
+            
+            // Este método cuenta el número de filas que fueron modificadas.
+            // Por esto, si se modificó una fila, devuelve true. Si modificó cero filas, devuelve false.
+            return ps.executeUpdate() > 0;
+            
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            DBConnection.close(conn, ps);
+        }
+    }
 }

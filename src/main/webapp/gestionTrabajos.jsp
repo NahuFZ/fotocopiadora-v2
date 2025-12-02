@@ -227,31 +227,31 @@
                                             <span class="text-muted small fst-italic">Finalizado</span>
                                         <% } %>
                                     </form>
-<!--                                     <form action="GestionTrabajosServlet" method="POST" class="d-inline"> -->
-<!--                                     	Pasamos el id del trabajo y el nombre de la acción -->
-<!--                                         <input type="hidden" name="accion" value="cambiarEstado"> -->
-<%--                                         <input type="hidden" name="idTrabajo" value="<%= t.getIdTrabajo() %>"> --%>
+                                    <form action="GestionTrabajosServlet" method="POST" class="d-inline">
+										<!-- Pasamos el id del trabajo y el nombre de la acción -->
+                                        <input type="hidden" name="accion" value="revertirEstado">
+                                        <input type="hidden" name="idTrabajo" value="<%= t.getIdTrabajo() %>">
                                         
-<!--                                         Pasamos el filtro y orden elegidos por el usuario para que no se pierdan -->
-<%--                                         <input type="hidden" name="filtroEstadoActual" value="<%= filtroEstadoActual %>"> --%>
-<%--                                         <input type="hidden" name="ordenActual" value="<%= ordenActual %>"> --%>
+                                        <!-- Pasamos el filtro y orden elegidos por el usuario para que no se pierdan -->
+                                        <input type="hidden" name="filtroEstadoActual" value="<%= filtroEstadoActual %>">
+                                        <input type="hidden" name="ordenActual" value="<%= ordenActual %>">
                                         
-<%--                                         <% if ("terminado".equals(t.getEstado())) { %> --%>
-<!--                                             Botón: Revertir a pendiente -->
-<!--                                             <input type="hidden" name="nuevoEstado" value="pendiente"> -->
-<!--                                             <button type="submit" class="btn btn-success btn-sm table-action-btn" title="Revetir a pendiente"> -->
-<!--                                                 <i class="bi bi-check-lg me-1"></i> -->
-<!--                                             </button> -->
+                                        <% if ("terminado".equals(t.getEstado())) { %>
+                                            <!-- Botón: Revertir a pendiente -->
+                                            <input type="hidden" name="nuevoEstado" value="pendiente">
+                                            <button type="submit" class="btn btn-success btn-sm table-action-btn" title="Revetir a pendiente">
+                                                <i class="bi bi-arrow-counterclockwise ms-1"></i>
+                                            </button>
                                             
-<%--                                         <% } else if ("retirado".equals(t.getEstado())) { %> --%>
-<!--                                             Botón: Revertir a terminado -->
-<!--                                             <input type="hidden" name="nuevoEstado" value="terminado"> -->
-<!--                                             <button type="submit" class="btn btn-primary btn-sm table-action-btn" title="Revetir a terminado"> -->
-<!--                                                 <i class="bi bi-box-seam me-1"></i> -->
-<!--                                             </button> -->
+                                        <% } else if ("retirado".equals(t.getEstado())) { %>
+                                            <!-- Botón: Revertir a terminado -->
+                                            <input type="hidden" name="nuevoEstado" value="terminado">
+                                            <button type="submit" class="btn btn-primary btn-sm table-action-btn" title="Revetir a terminado">
+                                                <i class="bi bi-arrow-counterclockwise ms-1"></i>
+                                            </button>
                                             
-<%--                                         <% } %> --%>
-<!--                                     </form> -->
+                                        <% } %>
+                                    </form>
                                 </td>
                             </tr>
                             <% 
