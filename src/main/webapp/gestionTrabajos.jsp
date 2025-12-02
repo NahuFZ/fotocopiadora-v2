@@ -194,8 +194,13 @@
                                 <!-- ACCIONES (FORMULARIOS) -->
                                 <td class="text-end pe-4">
                                     <form action="GestionTrabajosServlet" method="POST" class="d-inline">
+                                    	<!-- Pasamos el id del trabajo y el nombre de la acción -->
                                         <input type="hidden" name="accion" value="cambiarEstado">
                                         <input type="hidden" name="idTrabajo" value="<%= t.getIdTrabajo() %>">
+                                        
+                                        <!-- Pasamos el filtro y orden elegidos por el usuario para que no se pierdan -->
+                                        <input type="hidden" name="filtroEstadoActual" value="<%= filtroEstadoActual %>">
+                                        <input type="hidden" name="ordenActual" value="<%= ordenActual %>">
                                         
                                         <% if ("pendiente".equals(t.getEstado())) { %>
                                             <!-- Botón: Marcar como Terminado -->

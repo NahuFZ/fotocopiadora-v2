@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import utils.Utils;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -89,6 +91,9 @@ public class GestionTrabajosServlet extends HttpServlet {
     	}
         
         String accion = request.getParameter("accion");
+        // --- RECUPERAR LOS FILTROS OCULTOS ---
+        String filtroEstado = request.getParameter("filtroEstadoActual");
+        String orden = request.getParameter("ordenActual");
         
         if ("cambiarEstado".equals(accion)) {
             try {
@@ -117,7 +122,13 @@ public class GestionTrabajosServlet extends HttpServlet {
             }
         }
         
-        // Redirigimos al GET para recargar la tabla
-        response.sendRedirect("GestionTrabajosServlet");
+        // Construimos la URL para volver al GET con los mismos parámetros.
+        // Usamos URLEncoder para evitar problemas con espacios o caracteres raros.
+        String redirectURL = "GestionTrabajosServlet?filtroEstado=" + 
+                             URLEncoder.encode(filtroEstado, StandardCharsets.UTF_8) + 
+                             "&orden=" + 
+                             URLEncoder.encode(orden, StandardCharsets.UTF_8);
+        
+        response.sendRedirect(redirectURL);
     }
 }
