@@ -1,4 +1,5 @@
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Date" %>
 <%@ page import="clases.Trabajo" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="utils.Utils" %>
@@ -34,6 +35,8 @@
     
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     SimpleDateFormat sdfDate = new SimpleDateFormat("dd/MM/yyyy");
+ 	// Obtenemos la fecha actual para comparaciones
+    Date fechaActual = new Date();
 %>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8"
@@ -148,6 +151,14 @@
                                     String badgeClass = "bg-secondary";
                                     if ("pendiente".equals(t.getEstado())) badgeClass = "bg-warning text-dark";
                                     else if ("terminado".equals(t.getEstado())) badgeClass = "bg-success";
+                                 	
+                                    // Lógica de Fecha Vencida (Rojo vs Negrita)
+                                    String estiloFechaRetiro = "fw-bold text-dark"; // Estilo normal
+                                    
+                                    if ("pendiente".equals(t.getEstado()) && t.getFechaRetiroSolicitada().before(fechaActual)) {
+                                        // Si está pendiente Y la fecha ya pasó -> ROJO
+                                        estiloFechaRetiro = "text-danger fw-bold";
+                                    }
                             %>
                             <tr>
                                 <!-- ID -->
@@ -192,13 +203,33 @@
                                 <!-- FECHAS -->
                                 <td>
                                     <div class="small text-muted">Sol: <%= sdf.format(t.getFechaSolicitud()) %></div>
-                                    <div class="small fw-bold">
-                                        Ret: <%= sdfDate.format(t.getFechaRetiroSolicitada()) %>
+                                    
+                                    <!-- Aquí aplicamos el estilo condicional (Rojo o Negrita) -->
+                                    <div class="small <%= estiloFechaRetiro %>">
+                                        Ret: <%= sdf.format(t.getFechaRetiroSolicitada()) %>
+                                        <% if (estiloFechaRetiro.contains("danger")) { %>
+                                            <i class="bi bi-exclamation-circle-fill ms-1" title="Vencido"></i>
+                                        <% } %>
                                     </div>
+                                    
+                                    <!-- Solo mostramos Impresión si existe -->
+                                    <% if (t.getFechaImpresion() != null) { %>
+                                        <div class="small text-success mt-1">
+                                            <i class="bi bi-printer me-1"></i>Imp: <%= sdf.format(t.getFechaImpresion()) %>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <!-- Solo mostramos Entrega si existe -->
+                                    <% if (t.getFechaEntrega() != null) { %>
+                                        <div class="small text-primary">
+                                            <i class="bi bi-box-seam me-1"></i>Ent: <%= sdf.format(t.getFechaEntrega()) %>
+                                        </div>
+                                    <% } %>
                                 </td>
                                 
                                 <!-- ACCIONES (FORMULARIOS) -->
-                                <td class="text-end pe-4">
+                                <td class="text-end pe-4 d-flex justify-content-end gap-2">
+                                    <!-- ACCIÓN 1: ACTUALIZAR ESTADO -->
                                     <form action="GestionTrabajosServlet" method="POST" class="d-inline">
                                     	<!-- Pasamos el id del trabajo y el nombre de la acción -->
                                         <input type="hidden" name="accion" value="cambiarEstado">
@@ -211,22 +242,23 @@
                                         <% if ("pendiente".equals(t.getEstado())) { %>
                                             <!-- Botón: Marcar como Terminado -->
                                             <input type="hidden" name="nuevoEstado" value="terminado">
-                                            <button type="submit" class="btn btn-success btn-sm table-action-btn" title="Trabajo impreso y listo">
+                                            <button type="submit" class="btn btn-success btn-sm text-nowrap" title="Trabajo impreso y listo">
                                                 <i class="bi bi-check-lg me-1"></i>Terminado
                                             </button>
                                             
                                         <% } else if ("terminado".equals(t.getEstado())) { %>
                                             <!-- Botón: Marcar como Retirado -->
                                             <input type="hidden" name="nuevoEstado" value="retirado">
-                                            <button type="submit" class="btn btn-primary btn-sm table-action-btn" title="Cliente retiró el pedido">
+                                            <button type="submit" class="btn btn-primary btn-sm text-nowrap" title="Cliente retiró el pedido">
                                                 <i class="bi bi-box-seam me-1"></i>Entregado
                                             </button>
                                             
                                         <% } else { %>
-                                            <!-- Sin acciones -->
+                                            <!-- Estado finalizado-->
                                             <span class="text-muted small fst-italic">Finalizado</span>
                                         <% } %>
                                     </form>
+                                    <!-- ACCIÓN 2: REVERTIR ESTADO -->
                                     <form action="GestionTrabajosServlet" method="POST" class="d-inline">
 										<!-- Pasamos el id del trabajo y el nombre de la acción -->
                                         <input type="hidden" name="accion" value="revertirEstado">
@@ -239,15 +271,15 @@
                                         <% if ("terminado".equals(t.getEstado())) { %>
                                             <!-- Botón: Revertir a pendiente -->
                                             <input type="hidden" name="nuevoEstado" value="pendiente">
-                                            <button type="submit" class="btn btn-success btn-sm table-action-btn" title="Revetir a pendiente">
-                                                <i class="bi bi-arrow-counterclockwise ms-1"></i>
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm" title="Revertir a pendiente">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
                                             </button>
                                             
                                         <% } else if ("retirado".equals(t.getEstado())) { %>
                                             <!-- Botón: Revertir a terminado -->
                                             <input type="hidden" name="nuevoEstado" value="terminado">
-                                            <button type="submit" class="btn btn-primary btn-sm table-action-btn" title="Revetir a terminado">
-                                                <i class="bi bi-arrow-counterclockwise ms-1"></i>
+                                            <button type="submit" class="btn btn-primary btn-sm table-action-btn" title="Revertir a terminado">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
                                             </button>
                                             
                                         <% } %>
