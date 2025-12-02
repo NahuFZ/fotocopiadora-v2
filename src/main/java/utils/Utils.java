@@ -93,18 +93,6 @@ public class Utils {
         return sesionExiste;
     }
     
-    /**
-     * Obtiene el ID del usuario actual de forma segura.
-     * (Asume que ya se validó el acceso con esAdmin o esCliente).
-     
-    public static int getIdUsuario(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null && session.getAttribute("idUsuario") != null) {
-            return (Integer) session.getAttribute("idUsuario");
-        }
-        return -1; // O lanzar excepción
-    }*/
-    
 	  /**
      * Método para enviar un mensaje de error de un Servlet a un JSP para que lo ve.
      */

@@ -30,8 +30,7 @@ public class LoginServlet extends HttpServlet {
     }
 
     /**
-     * Maneja peticiones GET. Lo redirigimos a POST, aunque
-     * idealmente debería solo mostrar el formulario.
+     * GET: redirige al JSP.
      */
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -39,7 +38,10 @@ public class LoginServlet extends HttpServlet {
         // simplemente lo mandamos al login.
         response.sendRedirect("login.jsp");
 	}
-
+    
+    /**
+     * POST: Controla los datos de inicio de sesión y reenvia a las páginas del sistema.
+     */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -63,7 +65,7 @@ public class LoginServlet extends HttpServlet {
             // (Guardamos el bean completo para usarlo en JSPs)
             session.setAttribute("usuarioLogueado", usuario);
             
-            // Guardamos atributos individuales para fácil acceso en JSPs con Scriptlets <% ... %>
+            // Guardamos atributos individuales para fácil acceso en JSPs y Servlets.
             session.setAttribute("idUsuario", usuario.getIdUsuario());
             session.setAttribute("nombreCompleto", usuario.getNombreCompleto());
             session.setAttribute("nombreRol", usuario.getNombreRol());
@@ -76,13 +78,9 @@ public class LoginServlet extends HttpServlet {
                 // Es Cliente
                 response.sendRedirect("paginaPrincipalCliente.jsp");
             }
-
-            // --- FIN DEL "CAMINO FELIZ" ---
             
         } catch (AuthException e) {
-            
-            // --- CAMINO DE ERROR (Autenticación) ---
-            // Capturamos CUALQUIER error de login que lanzó el DAO
+            // Capturamos CUALQUIER error de login que lanzó el DAO con el uso de una excepción personalizada
             // (Pass incorrecta, email no existe, cuenta inactiva)
             
             // Obtenemos el mensaje específico del error (ej. "La contraseña es incorrecta.")
@@ -90,8 +88,7 @@ public class LoginServlet extends HttpServlet {
             
             // Usamos nuestra función de ayuda para enviar el error a login.jsp
             Utils.enviarError(request, response, mensajeError, "login.jsp");
-        } 
-        // (Dejamos que otros errores, como ServletException, se propaguen)
+        }
 	}
 
 }

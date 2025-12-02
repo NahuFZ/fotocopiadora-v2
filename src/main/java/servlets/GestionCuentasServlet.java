@@ -27,7 +27,7 @@ public class GestionCuentasServlet extends HttpServlet {
     private UsuarioDAO usuarioDAO;
     private RolDAO rolDAO;
     
-    private static final String JSP = "gestionUsuarios.jsp";
+    private static final String JSP = "gestionCuentas.jsp";
     
     public GestionCuentasServlet() {
         super();
@@ -44,7 +44,7 @@ public class GestionCuentasServlet extends HttpServlet {
     	if (!Utils.esAdmin(request, response)) {
     		return;
     	}
-        
+    	String modError = "Mostrar datos: "; // Identifica al módulo para el mensaje de error.
         try {
             // 2. Obtener los usuarios y los roles existentes.
             List<Usuario> listaUsuarios = usuarioDAO.obtenerTodosLosUsuarios();
@@ -58,18 +58,18 @@ public class GestionCuentasServlet extends HttpServlet {
             
         } catch (SQLException e) {
             e.printStackTrace();
-            String mensaje = "Fallo al conectarse a la base de datos.";
+            String mensaje = modError + "Fallo al conectarse a la base de datos.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         catch (ClassNotFoundException e) {
         	e.printStackTrace();
-            String mensaje = "No se encuentra el driver JDBC.";
+            String mensaje = modError + "No se encuentra el driver JDBC.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         catch (Exception e) {
             e.printStackTrace();
             // En caso de error, volvemos al panel principal
-            String mensaje = "Fallo interno del servidor.";
+            String mensaje = modError + "Fallo interno del servidor.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
     }
@@ -83,7 +83,7 @@ public class GestionCuentasServlet extends HttpServlet {
     	if (!Utils.esAdmin(request, response)) {
     		return;
     	}
-    	
+    	String modError = "Procesar cambios: "; // Identifica al módulo para el mensaje de error.
     	HttpSession session = request.getSession(false);
         String accion = request.getParameter("accion");
         String idUsuarioStr = request.getParameter("idUsuario");
@@ -107,25 +107,25 @@ public class GestionCuentasServlet extends HttpServlet {
                 boolean nuevoEstado = Boolean.parseBoolean(request.getParameter("nuevoEstado"));
                 usuarioDAO.cambiarEstadoCuenta(idUsuario, nuevoEstado);
             }
+            // 3. Redirigir al GET para ver los cambios
+            response.sendRedirect("GestionCuentasServlet");
             
         } catch (SQLException e) {
             e.printStackTrace();
-            String mensaje = "Fallo al conectarse a la base de datos.";
+            String mensaje = modError + "Fallo al conectarse a la base de datos.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         catch (ClassNotFoundException e) {
         	e.printStackTrace();
-            String mensaje = "No se encuentra el driver JDBC.";
+            String mensaje = modError + "No se encuentra el driver JDBC.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         catch (Exception e) {
             e.printStackTrace();
             // En caso de error, volvemos al panel principal
-            String mensaje = "Fallo interno del servidor.";
+            String mensaje = modError + "Fallo interno del servidor.";
             Utils.enviarError(request, response, mensaje, JSP);
         }
         
-        // 3. Redirigir al GET para ver los cambios
-        response.sendRedirect("GestionCuentasServlet");
     }
 }

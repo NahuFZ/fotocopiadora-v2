@@ -89,9 +89,9 @@
 	        <div class="alert alert-danger text-center" role="alert">
 	            <%= mensajeError %>
 	        </div>
-        <% } %>
-        <!-- ALERTA DE ERROR (Si intenta modificarse a sí mismo) -->
-        <% if ("self_mod".equals(errorParam)) { %>
+        <% }
+           // ALERTA DE ERROR (Si intenta modificarse a sí mismo)
+           if ("self_mod".equals(errorParam)) { %>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Acción no permitida:</strong> No puedes modificar tu propia cuenta desde este panel.
@@ -120,14 +120,14 @@
                             if (listaUsuarios != null) {
                                 for (Usuario u : listaUsuarios) { 
                                     boolean esElMismo = (u.getIdUsuario() == idAdminLogueado);
-                                    String claseFila = "";
+                                    String colorRol = "bg-primary"; // Color por defecto (usado en cliente)
                                     
-                                    // Estilo visual para usuarios inactivos
-                                    if (!u.isEstaActivo()) {
-                                        claseFila = "bg-inactive"; 
+                                    // Estilo visual para el rol del usuario
+                                    if ("admin".equals(u.getNombreRol())){
+                                    	colorRol = "bg-dark";
                                     }
                             %>
-                            <tr class="<%= claseFila %>">
+                            <tr>
                                 <!-- ID -->
                                 <td class="ps-4 fw-bold text-muted">#<%= u.getIdUsuario() %></td>
                                 
@@ -156,7 +156,7 @@
                                 
                                 <!-- ROL ACTUAL (Texto) -->
                                 <td class="text-center">
-                                    <span class="badge bg-light text-dark border">
+                                    <span class="badge <%= colorRol %> border">
                                         <%= u.getNombreRol().toUpperCase() %>
                                     </span>
                                 </td>

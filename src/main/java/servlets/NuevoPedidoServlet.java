@@ -54,8 +54,7 @@ public class NuevoPedidoServlet extends HttpServlet {
     }
 
     /**
-     * Maneja peticiones GET. Lo redirigimos a POST, aunque
-     * idealmente debería solo mostrar el formulario.
+     * GET: Al no tener uso, redirige al JSP.
      */
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -64,11 +63,14 @@ public class NuevoPedidoServlet extends HttpServlet {
         response.sendRedirect("nuevoPedido.jsp");
 	}
     
+    /**
+     * POST: Realiza la comprobación y carga de datos del formulario un nuevo pedido.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-    	// --- 1. Comprueba sesión abierta de cliente ---
+    	// --- Comprueba sesión abierta de cliente ---
     	if (!Utils.esCliente(request, response)) {
     		return;
     	}
@@ -84,20 +86,20 @@ public class NuevoPedidoServlet extends HttpServlet {
         File archivoGuardado = null;
         String nombreUnico = null;
         
-        // --- 2. Procesamiento del Formulario Multipart ---
+        // --- Procesamiento del Formulario Multipart ---
         try {
-            // 2.1. Obtener los campos de texto
+            // Obtener los campos de texto
             String numCopiasStr = request.getParameter("num_copias");
             String calidad = request.getParameter("calidad");
             String faz = request.getParameter("faz");
             String fechaRetiroStr = request.getParameter("fecha_retiro");
 
-            // 2.2. Obtener el archivo (usamos getPart)
+            // Obtener el archivo (usamos getPart)
             Part filePart = request.getPart("archivo");
             String nombreArchivoOriginal = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-            String mimeType = filePart.getContentType(); // <-- Obtenemos el tipo de archivo real
+            String mimeType = filePart.getContentType(); // Obtenemos el tipo de archivo real
 
-            // --- 3. Validación de Datos (Server-Side) ---
+            // --- Validación de Datos (Server-Side) ---
             int numCopiasInt = 0;
             Timestamp fechaRetiroTimestamp = null;
 
@@ -105,7 +107,7 @@ public class NuevoPedidoServlet extends HttpServlet {
             if (nombreArchivoOriginal == null || nombreArchivoOriginal.isBlank()) {
                 errores.add("Debe seleccionar un archivo para subir.");
             } else {
-                // *** ¡NUEVA VALIDACIÓN DE SEGURIDAD! ***
+            	
                 // Validar el TIPO de archivo (MIME Type)
                 if (!"application/pdf".equals(mimeType) && 
                     !"image/jpeg".equals(mimeType) && // Incluye JPG y JPEG.
@@ -116,8 +118,7 @@ public class NuevoPedidoServlet extends HttpServlet {
                     System.out.println("Intento de subida de archivo no permitido: " + mimeType);
                 }
             }
-            // (Aquí podrías añadir más validaciones: tipo de archivo, tamaño, etc.)
-
+            
             // Validar número de copias
             try {
                 numCopiasInt = Integer.parseInt(numCopiasStr);
@@ -134,7 +135,7 @@ public class NuevoPedidoServlet extends HttpServlet {
                 if (fechaRetiroDate.isBefore(LocalDate.now())) {
                     errores.add("La fecha de retiro no puede ser en el pasado.");
                 }
-                // Convertimos LocalDate a Timestamp (a las 00:00:00)
+                // Convertimos LocalDate a Timestamp
                 fechaRetiroTimestamp = Timestamp.valueOf(fechaRetiroDate.atStartOfDay());
             } catch (DateTimeParseException e) {
                 errores.add("El formato de fecha no es válido.");
@@ -142,22 +143,22 @@ public class NuevoPedidoServlet extends HttpServlet {
             	errores.add("Ingrese una fecha.");
             }
 
-            // --- 4. Si hay errores de validación, reenviar ---
+            // --- Si hay errores de validación, reenviar ---
             if (!errores.isEmpty()) {
                 enviarErrores(request, response, errores);
                 return;
             }
 
-            // --- 5. Lógica de Negocio (Guardar Archivo y BBDD) ---
+            // --- Lógica de Negocio (Guardar Archivo y BBDD) ---
             
-            // 5.1. Guardar el archivo en el servidor
+            // Guardar el archivo en el servidor
             // Generamos un nombre único para evitar colisiones (ej. si dos suben "trabajo.pdf")
             // agrupamos un código único pseudoaleatorio junto al nombre del archivo
             nombreUnico = UUID.randomUUID().toString() + "_" + nombreArchivoOriginal;
             if (nombreUnico.length() > 260) {
             	nombreUnico = UUID.randomUUID().toString();
             }
-            // USAMOS LA RUTA DE LA CLASE DE CONFIGURACIÓN
+            // Usamos la ruta de la clase AppConfig
             File uploadsDir = new File(AppConfig.DIRECTORIO_ARCHIVOS);
             archivoGuardado = new File(uploadsDir, nombreUnico); // Combinamos Ruta + Nombre
             
@@ -167,7 +168,7 @@ public class NuevoPedidoServlet extends HttpServlet {
                 Files.copy(fileContent, archivoGuardado.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
             
-            // 5.2. Crear el objeto Trabajo (JavaBean)
+            // Crear el objeto Trabajo (JavaBean)
             Trabajo nuevoTrabajo = new Trabajo();
             nuevoTrabajo.setIdCliente(idCliente);
             nuevoTrabajo.setNumCopias(numCopiasInt);
@@ -179,11 +180,11 @@ public class NuevoPedidoServlet extends HttpServlet {
             // Guardamos el nombre con el que se guardó el archivo
             nuevoTrabajo.setNombreArchivo(nombreUnico);
 
-            // 5.3. Llamar al DAO para insertar en la BBDD
+            // Llama al DAO para insertar en la BBDD
             boolean exito = trabajoDAO.crearTrabajo(nuevoTrabajo);
 
             if (exito) {
-                // ¡ÉXITO TOTAL! Redirigimos a la misma página con mensaje
+                // Redirigimos a la misma página con mensaje
                 response.sendRedirect("nuevoPedido.jsp?exito=true");
             } else {
                 // Error de BBDD
@@ -209,7 +210,7 @@ public class NuevoPedidoServlet extends HttpServlet {
             // Este error lo lanza el DAO (paso 5.3) si la BBDD falla.
             e.printStackTrace();
             
-            // --- ¡AQUÍ VA EL ROLLBACK MANUAL! ---
+            // --- ROLLBACK MANUAL: Eliminación del archivo del servidor ---
             // Si llegamos aquí, es probable que el archivo SÍ se haya guardado (paso 5.1)
             // pero la BBDD falló. Debemos borrar el archivo huérfano.
             if (archivoGuardado != null && archivoGuardado.exists()) {
@@ -221,14 +222,13 @@ public class NuevoPedidoServlet extends HttpServlet {
                     ioex.printStackTrace();
                 }
             }
-            
             errores.add("Error de conexión con la base de datos. Su pedido no fue procesado.");
             enviarErrores(request, response, errores);
             
         } catch (Exception e) {
         	// Un catch genérico final por si algo más se escapó (ej. NullPointerException)
             e.printStackTrace();
-            errores.add("Ocurrió un error inesperado: " + e.getMessage());
+            errores.add("Ocurrió un error inesperado");
             enviarErrores(request, response, errores);
         }
     }

@@ -149,7 +149,7 @@
              	 <%-- No existen trabajos --%>
                  <div class="text-center py-5">
                      <i class="bi bi-inbox fs-1 text-muted"></i>
-                     <p class="mt-3 text-muted">No se encontraron pedidos con estos filtros.</p>
+                     <p class="mt-3 text-muted">No se encontraron pedidos.</p>
                  </div>
 			<%
 			   } else {

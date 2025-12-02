@@ -23,8 +23,6 @@ import dao.UsuarioDAO;
 public class RegistroServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	// Creamos una instancia del DAO.
-    // En aplicaciones más avanzadas, esto se "inyectaría".
-    // Para este proyecto, instanciarlo aquí está perfecto.
     private UsuarioDAO usuarioDAO;
 
     public RegistroServlet() {
@@ -33,17 +31,23 @@ public class RegistroServlet extends HttpServlet {
         this.usuarioDAO = new UsuarioDAO();
     }
 
+    /**
+     * GET: Redirige al JSP.
+     */
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// Si alguien intenta acceder por GET, simplemente lo mandamos al formulario.
         response.sendRedirect("registro.jsp");
 	}
 
+    /**
+     * POST: Controla y sube los datos del formulario.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Obtener los parámetros del formulario registro.jsp
+        // 1. Obtiene los parámetros del formulario registro.jsp
         String nombreCompleto = request.getParameter("nombre_completo");
         String email = request.getParameter("email");
         String pass1 = request.getParameter("password");
@@ -113,7 +117,7 @@ public class RegistroServlet extends HttpServlet {
             
         } catch (SQLException | ClassNotFoundException e) {
             // Captura de cualquier otro error (ej. BBDD caída, Driver no encontrado)
-            e.printStackTrace(); // Imprime el error en la consola de Tomcat
+            e.printStackTrace(); // Imprime el error en la consola
             errores.add("Error de conexión con la base de datos. Intentelo más tarde.");
             enviarErrores(request, response, errores);
         }
