@@ -33,6 +33,7 @@
     String ordenActual = (String) request.getAttribute("ordenActual");
     
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    SimpleDateFormat sdfDate = new SimpleDateFormat("dd/MM/yyyy");
 %>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8"
@@ -160,8 +161,13 @@
                                 
                                 <!-- ARCHIVO -->
                                 <td>
-                                    <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>" target="_blank" class="text-decoration-none fw-bold text-primary">
+                                	<!-- Ver archivo -->
+                                    <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>&tipo=inline" target="_blank" class="text-decoration-none fw-bold text-primary">
                                         <i class="bi bi-file-earmark-pdf-fill me-1"></i><%= t.getNombreArchivoOriginal() %>
+                                    </a>
+                                    <!-- Descargar archivo -->
+                                    <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>&tipo=attachment" target="_blank" class="text-decoration-none fw-bold text-primary">
+                                        <button class="btn btn-outline-primary btn-sm ms-2"><i class="bi bi-download"></i></button>
                                     </a>
                                 </td>
                                 
@@ -186,8 +192,8 @@
                                 <!-- FECHAS -->
                                 <td>
                                     <div class="small text-muted">Sol: <%= sdf.format(t.getFechaSolicitud()) %></div>
-                                    <div class="small fw-bold text-danger">
-                                        Ret: <%= sdf.format(t.getFechaRetiroSolicitada()) %>
+                                    <div class="small fw-bold">
+                                        Ret: <%= sdfDate.format(t.getFechaRetiroSolicitada()) %>
                                     </div>
                                 </td>
                                 
@@ -221,6 +227,31 @@
                                             <span class="text-muted small fst-italic">Finalizado</span>
                                         <% } %>
                                     </form>
+<!--                                     <form action="GestionTrabajosServlet" method="POST" class="d-inline"> -->
+<!--                                     	Pasamos el id del trabajo y el nombre de la acción -->
+<!--                                         <input type="hidden" name="accion" value="cambiarEstado"> -->
+<%--                                         <input type="hidden" name="idTrabajo" value="<%= t.getIdTrabajo() %>"> --%>
+                                        
+<!--                                         Pasamos el filtro y orden elegidos por el usuario para que no se pierdan -->
+<%--                                         <input type="hidden" name="filtroEstadoActual" value="<%= filtroEstadoActual %>"> --%>
+<%--                                         <input type="hidden" name="ordenActual" value="<%= ordenActual %>"> --%>
+                                        
+<%--                                         <% if ("terminado".equals(t.getEstado())) { %> --%>
+<!--                                             Botón: Revertir a pendiente -->
+<!--                                             <input type="hidden" name="nuevoEstado" value="pendiente"> -->
+<!--                                             <button type="submit" class="btn btn-success btn-sm table-action-btn" title="Revetir a pendiente"> -->
+<!--                                                 <i class="bi bi-check-lg me-1"></i> -->
+<!--                                             </button> -->
+                                            
+<%--                                         <% } else if ("retirado".equals(t.getEstado())) { %> --%>
+<!--                                             Botón: Revertir a terminado -->
+<!--                                             <input type="hidden" name="nuevoEstado" value="terminado"> -->
+<!--                                             <button type="submit" class="btn btn-primary btn-sm table-action-btn" title="Revetir a terminado"> -->
+<!--                                                 <i class="bi bi-box-seam me-1"></i> -->
+<!--                                             </button> -->
+                                            
+<%--                                         <% } %> --%>
+<!--                                     </form> -->
                                 </td>
                             </tr>
                             <% 

@@ -190,8 +190,13 @@
                         
                         <!-- ARCHIVO -->
                         <td>
-                            <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>" target="_blank" class="text-decoration-none fw-bold">
+                       		<!-- Ver archivo -->
+                            <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>&tipo=inline" target="_blank" class="text-decoration-none fw-bold">
                                 <i class="bi bi-file-earmark-text me-1"></i><%= t.getNombreArchivoOriginal() %>
+                            </a>
+                            <!-- Descargar archivo -->
+                            <a href="VerArchivoServlet?id=<%= t.getIdTrabajo() %>&tipo=attachment" target="_blank" class="text-decoration-none fw-bold text-primary">
+                                <button class="btn btn-outline-primary btn-sm ms-2"><i class="bi bi-download"></i></button>
                             </a>
                         </td>
                         

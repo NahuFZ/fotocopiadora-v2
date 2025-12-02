@@ -110,7 +110,8 @@ public class VerArchivoServlet extends HttpServlet {
             // Las dos opciones de Content-Disposition para mostrar el archivo son:
             // "inline": Trata de mostrarlo en el navegador.
             // "attachment": Lo fuerza a descargar.
-            response.setHeader("Content-Disposition", "inline; filename=\"" + trabajo.getNombreArchivoOriginal() + "\"");
+            response.setHeader("Content-Disposition",  request.getParameter("tipo") 
+            		+ "; filename=\"" + trabajo.getNombreArchivoOriginal() + "\"");
             
             // Le decimos al navegador cuánto pesa el archivo
             response.setContentLength((int) archivo.length());

@@ -25,6 +25,15 @@ public class DBConnection {
     private static final String JDBC_USER = "root";
     private static final String JDBC_PASS = ""; // Tu contraseña (si tienes una)
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+    static {
+    	// 1. Cargar el Driver
+        try {
+			Class.forName(JDBC_DRIVER);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
     /**
      * Constructor privado.
@@ -45,8 +54,7 @@ public class DBConnection {
      * @throws ClassNotFoundException si falta el Driver JDBC
      */
     public static Connection getConnection() throws SQLException, ClassNotFoundException {
-        // 1. Cargar el Driver
-        Class.forName(JDBC_DRIVER);
+        
         
         // 2. Obtener y devolver la conexión
         return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
