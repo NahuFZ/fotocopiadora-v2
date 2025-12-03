@@ -7,9 +7,9 @@
 --%>
 <%
 	//Comprueba sesión abierta por un administrador.
-// 	if (!Utils.esAdmin(request, response)) {
-// 		return;
-// 	}
+	if (!Utils.esAdmin(request, response)) {
+		return;
+	}
 
 	// 1. Obtener la sesión actual, sin crear una nueva si no existe
     HttpSession sesion = request.getSession(false);
