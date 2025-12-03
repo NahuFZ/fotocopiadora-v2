@@ -11,9 +11,9 @@
 --%>
 <%
 	// Comprueba sesión abierta de cliente
-// 	if (!Utils.esCliente(request, response)) {
-// 		return;
-// 	}
+	if (!Utils.esCliente(request, response)) {
+		return;
+	}
     
     // --- Si llegamos aquí, es un cliente válido ---
     
