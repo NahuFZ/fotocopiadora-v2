@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 //Imports de nuestra arquitectura DAO
 import dao.UsuarioDAO;
@@ -25,6 +26,20 @@ public class RegistroServlet extends HttpServlet {
 	// Creamos una instancia del DAO.
     private UsuarioDAO usuarioDAO;
 
+    // --- PATRONES DE VALIDACIÓN (REGEX) ---
+    
+    // Nombre: Letras (a-z, A-Z), vocales con tilde, ñ/Ñ y espacios. Mínimo 1 caracter.
+    // ^ = inicio, $ = fin, + = uno o más.
+    private static final String REGEX_NOMBRE = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s]{1,50}$";
+    
+    // Email: Patrón estándar simple (texto + @ + texto + . + texto)
+    // Evita caracteres peligrosos como < > ( ) [ ] \ , ; :
+    private static final String REGEX_EMAIL = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
+    
+    // Password: Solo letras y números (sin símbolos). Mínimo 8 caracteres.
+    private static final String REGEX_PASSWORD = "^[a-zA-Z0-9]{8,20}$";
+
+    
     public RegistroServlet() {
         super();
         // Inicializamos el DAO en el constructor del servlet
@@ -59,26 +74,35 @@ public class RegistroServlet extends HttpServlet {
         // Validación 1: Nombre completo obligatorio (nuevo requisito)
         if (nombreCompleto == null || nombreCompleto.isBlank()) {
             errores.add("El nombre completo es obligatorio.");
+        } else if (!Pattern.matches(REGEX_NOMBRE, nombreCompleto)) {
+            // Si no coincide con el patrón de solo letras
+            errores.add("El nombre solo puede contener letras, números y espacios.");
         }
 
         // Validación 2: Email
         if (email == null || email.isBlank()) {
             errores.add("El email es obligatorio.");
-        } else if (!email.contains("@") || !email.contains(".")) {
-            // Validación simple de formato
+        } else if (!Pattern.matches(REGEX_EMAIL, email)) {
+            // Si no coincide con el patrón de email seguro
             errores.add("El formato del email no es válido.");
         }
 
         // Validación 3: Contraseña
         if (pass1 == null || pass1.isBlank()) {
             errores.add("La contraseña es obligatoria.");
-        } else if (pass1.length() < 8) {
-            // Es buena idea mantener una regla de longitud mínima
-            errores.add("La contraseña debe tener al menos 8 caracteres.");
+        } else {
+	        if (pass1.length() < 8) {
+	            // Es buena idea mantener una regla de longitud mínima
+	            errores.add("La contraseña debe tener al menos 8 caracteres.");
+	        }            
+	        // Validamos caracteres inválidos
+	        if (!Pattern.matches(REGEX_PASSWORD, pass1)) {
+	            errores.add("La contraseña solo puede contener letras y números (sin símbolos).");
+	        }
         }
 
         // Validación 4: Coincidencia de contraseñas
-        else if (!pass1.equals(pass2)) {
+        if (!pass1.equals(pass2)) {
             errores.add("Las contraseñas no coinciden.");
         }
 

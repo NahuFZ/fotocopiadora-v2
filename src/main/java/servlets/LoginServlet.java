@@ -12,6 +12,8 @@ import exceptions.AuthException;
 import dao.UsuarioDAO;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Servlet implementation class LoginServlet
@@ -22,6 +24,13 @@ public class LoginServlet extends HttpServlet {
 
     // Creamos una instancia del DAO
     private UsuarioDAO usuarioDAO;
+    
+    // Email: Patrón estándar simple (texto + @ + texto + . + texto)
+    // Evita caracteres peligrosos como < > ( ) [ ] \ , ; :
+    private static final String REGEX_EMAIL = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
+    
+    // Password: Solo letras y números (sin símbolos). Mínimo 8 caracteres.
+    private static final String REGEX_PASSWORD = "^[a-zA-Z0-9]{8,20}$";
 
     public LoginServlet() {
         super();
@@ -49,9 +58,33 @@ public class LoginServlet extends HttpServlet {
         // 1. Obtener los parámetros del formulario login.jsp
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        String mensajeError = "";
+        
 
         // 2. Lógica de login dentro de un try-catch
         try {
+            // Validación 2: Email
+            if (email == null || email.isBlank()) {
+                mensajeError = "El email es obligatorio.";
+            } else if (!Pattern.matches(REGEX_EMAIL, email)) {
+                // Si no coincide con el patrón de email seguro
+            	mensajeError = "El formato del email no es válido.";
+            }
+
+            // Validación 3: Contraseña
+            if (password == null || password.isBlank()) {
+            	mensajeError = "La contraseña es obligatoria.";
+            }
+    	        // Validamos caracteres inválidos
+            else if (!Pattern.matches(REGEX_PASSWORD, password)) {
+    	        	mensajeError = "La contraseña solo puede contener letras y números (sin símbolos).";
+    	        }
+            
+            if (!mensajeError.isBlank()) {
+            	Utils.enviarError(request, response, mensajeError, "login.jsp");
+            	return;
+            }
+            
             // 2.1. Validar credenciales usando el DAO
             // Este método AHORA solo devuelve un Usuario o lanza AuthException
             Usuario usuario = usuarioDAO.validarLogin(email, password);
@@ -84,11 +117,10 @@ public class LoginServlet extends HttpServlet {
             // (Pass incorrecta, email no existe, cuenta inactiva)
             
             // Obtenemos el mensaje específico del error (ej. "La contraseña es incorrecta.")
-            String mensajeError = e.getMessage();
+            mensajeError = e.getMessage();
             
             // Usamos nuestra función de ayuda para enviar el error a login.jsp
             Utils.enviarError(request, response, mensajeError, "login.jsp");
         }
 	}
-
 }
