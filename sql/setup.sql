@@ -4,8 +4,7 @@
   en phpMyAdmin ANTES de empezar a probar la aplicación.
 */
 
--- 1. Poblar la tabla de roles (¡MUY IMPORTANTE!)
--- El RegistroServlet.java asume que el idRol=1 es 'cliente'.
+-- 1. Colocar los roles en la tabla
 INSERT INTO `roles` (`idRol`, `nombre_rol`) VALUES
 (1, 'cliente'),
 (2, 'admin');

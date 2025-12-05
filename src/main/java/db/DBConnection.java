@@ -16,17 +16,14 @@ import java.sql.SQLException;
  */
 
 public class DBConnection {
-	   // --- 1. Centralización de Credenciales ---
-    // Todas las credenciales viven en un solo lugar. Si cambias la contraseña,
-    // solo la cambias aquí.
     
-    // Usamos las credenciales y URL que ya confirmamos
+    // Usamos las credenciales y URL de la base de datos
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/fotocopiadora?ServerTimezone=UTC";
     private static final String JDBC_USER = "root";
-    private static final String JDBC_PASS = ""; // Tu contraseña (si tienes una)
+    private static final String JDBC_PASS = "";
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     static {
-    	// 1. Cargar el Driver
+    	// Carga el Driver
         try {
 			Class.forName(JDBC_DRIVER);
 		} catch (ClassNotFoundException e) {
@@ -44,8 +41,6 @@ public class DBConnection {
         // Constructor vacío y privado
     }
 
-    // --- 2. Método de Conexión ---
-    
     /**
      * Obtiene una nueva conexión a la base de datos.
      * Quien llame a este método es responsable de CERRAR la conexión.
@@ -55,13 +50,9 @@ public class DBConnection {
      */
     public static Connection getConnection() throws SQLException, ClassNotFoundException {
         
-        
-        // 2. Obtener y devolver la conexión
+        // Obtener y devolver la conexión
         return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
     }
-
-    // --- 3. Métodos de Cierre de Recursos ---
-    // Estos métodos de ayuda se encargan del "finally" desordenado.
 
     /**
      * Cierra de forma segura un Connection, PreparedStatement y ResultSet.
